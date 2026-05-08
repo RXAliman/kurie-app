@@ -143,6 +143,14 @@
       "y": -1,
       "width": 390,
       "height": 1768
+    },
+    "dispute_resolution": {
+      "id": "acf1d4d75692438fba4d4d62ddb06356",
+      "sourceScreen": "projects/5975158744056910415/screens/acf1d4d75692438fba4d4d62ddb06356",
+      "x": 10402,
+      "y": -1,
+      "width": 390,
+      "height": 1768
     }
   },
   "metadata": {

@@ -26,9 +26,11 @@ An offline-first electricity submetering app for Philippine households. Provides
 - [x] Settings / Profile screen
 - [x] Property Management (Add/Edit submeters)
 - [x] Notification Center
+- [x] Dispute/Query system
 
 ## 5. Roadmap
-- [ ] Dispute/Query system
+- [ ] Data Persistence (Hive/SQLite integration)
+- [ ] Billing PDF Generation
 
 ## 6. Creative Freedom
 - Submeter analytics with consumption charts

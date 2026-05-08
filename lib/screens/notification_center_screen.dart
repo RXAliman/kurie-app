@@ -154,7 +154,14 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
       separatorBuilder: (context, index) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final item = filteredList[index];
-        return _buildNotificationCard(item);
+        return InkWell(
+          onTap: () {
+            if (item['isUrgent']) {
+              Navigator.of(context).pushNamed('/dispute_resolution');
+            }
+          },
+          child: _buildNotificationCard(item),
+        );
       },
     );
   }

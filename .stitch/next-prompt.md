@@ -1,24 +1,17 @@
 ---
-page: dispute_resolution
+feature: data_persistence
 ---
-A Dispute Resolution / Query screen for the Kurie app. This screen allows Tenants to flag issues with their bills and Admins to resolve them.
+Integrate Hive or SQLite for local data persistence in the Kurie app. Currently, all data is hardcoded in screen state.
 
-**Page Structure:**
-1. Header: Title \"Query Calculation\" or \"Dispute Resolution\".
-2. Context Card:
-   - Summary of the disputed bill (Month, Amount, kWh).
-   - Status tag (e.g., \"Pending Review\", \"Resolved\").
-3. Message Thread:
-   - A minimalist chat/log interface.
-   - Tenant's initial query (e.g., \"My usage seems too high for this month.\").
-   - Admin's response field.
-4. Action Bar (Admin only):
-   - \"Adjust Reading\" (re-opens the reading logger with current values).
-   - \"Mark as Resolved\".
-5. Metadata:
-   - Linked submeter and tenant name.
+**Task:**
+1. Define data models for:
+   - `Submeter` (id, name, unit, tenantId, lastReading, status).
+   - `Reading` (id, submeterId, value, timestamp, imageUrl).
+   - `Bill` (id, month, amount, kwh, status, timestamp).
+   - `Notification` (id, title, description, type, timestamp, isRead).
+2. Set up a local storage service (e.g., `LocalDatabaseService`).
+3. Replace hardcoded lists in `PropertyManagementScreen`, `NotificationCenterScreen`, and `AdminDashboardScreen` with data fetched from the local store.
+4. Ensure the \"Add Submeter\" and \"Log Reading\" forms actually save data to the store.
 
 **Design:**
-- Use `tertiary-amber` for the pending status and alert icons.
-- Follow the \"utility-chic\" aesthetic—crisp, high-contrast, no shadows.
-- 8px grid, 4px rounding.
+- No new UI screens for this iteration, but ensure the UI reacts to empty states and loading states correctly using the established utility-chic aesthetic.
