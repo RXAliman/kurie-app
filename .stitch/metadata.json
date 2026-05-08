@@ -1,0 +1,119 @@
+{
+  "name": "projects/5975158744056910415",
+  "projectId": "5975158744056910415",
+  "title": "Kurie Submeter Tracker",
+  "visibility": "PRIVATE",
+  "createTime": "2026-05-07T14:09:00.997033Z",
+  "updateTime": "2026-05-07T14:44:46.860967Z",
+  "projectType": "TEXT_TO_UI_PRO",
+  "origin": "STITCH",
+  "deviceType": "MOBILE",
+  "designTheme": {
+    "colorMode": "LIGHT",
+    "font": "INTER",
+    "roundness": "ROUND_FOUR",
+    "customColor": "#006875",
+    "saturation": 3
+  },
+  "screens": {
+    "onboarding_offline": {
+      "id": "e62cf17d32aa4351a41383bdf37d7078",
+      "sourceScreen": "projects/5975158744056910415/screens/e62cf17d32aa4351a41383bdf37d7078",
+      "x": 8522,
+      "y": -1,
+      "width": 390,
+      "height": 884
+    },
+    "onboarding_transparency": {
+      "id": "b3b70978991e429b83ab63c9a50bdf7d",
+      "sourceScreen": "projects/5975158744056910415/screens/b3b70978991e429b83ab63c9a50bdf7d",
+      "x": 4773,
+      "y": -1,
+      "width": 390,
+      "height": 884
+    },
+    "onboarding_evidence": {
+      "id": "d7db7fb4ffe64cfd80c6d55af9ba6f0b",
+      "sourceScreen": "projects/5975158744056910415/screens/d7db7fb4ffe64cfd80c6d55af9ba6f0b",
+      "x": 4303,
+      "y": -1,
+      "width": 390,
+      "height": 884
+    },
+    "onboarding_alerts": {
+      "id": "8535fbda40e84a7d92a3ef5d37afd1a2",
+      "sourceScreen": "projects/5975158744056910415/screens/8535fbda40e84a7d92a3ef5d37afd1a2",
+      "x": 3361,
+      "y": -1,
+      "width": 390,
+      "height": 884
+    },
+    "login_email": {
+      "id": "6a6393d9e62942099687d6f140b84d90",
+      "sourceScreen": "projects/5975158744056910415/screens/6a6393d9e62942099687d6f140b84d90",
+      "x": 2891,
+      "y": -1,
+      "width": 390,
+      "height": 884
+    },
+    "login_password": {
+      "id": "a7585cd0b4f742839a427de99518b58e",
+      "sourceScreen": "projects/5975158744056910415/screens/a7585cd0b4f742839a427de99518b58e",
+      "x": 2420,
+      "y": -1,
+      "width": 390,
+      "height": 884
+    },
+    "admin_dashboard": {
+      "id": "16c02186a4b04352994ef66f4cd7d3d1",
+      "sourceScreen": "projects/5975158744056910415/screens/16c02186a4b04352994ef66f4cd7d3d1",
+      "x": 8051,
+      "y": -1,
+      "width": 390,
+      "height": 1154
+    },
+    "bill_insights": {
+      "id": "1784a0789aef4ea6b88336c9457fe400",
+      "sourceScreen": "projects/5975158744056910415/screens/1784a0789aef4ea6b88336c9457fe400",
+      "x": 7110,
+      "y": -1,
+      "width": 390,
+      "height": 1303
+    },
+    "log_meter_reading": {
+      "id": "39505a78e69749d49fed1629b34fa688",
+      "sourceScreen": "projects/5975158744056910415/screens/39505a78e69749d49fed1629b34fa688",
+      "x": 7580,
+      "y": -1,
+      "width": 390,
+      "height": 956
+    },
+    "ledger_history": {
+      "id": "78c2eb0ccdf94bb0b5d535b966007a88",
+      "sourceScreen": "projects/5975158744056910415/screens/78c2eb0ccdf94bb0b5d535b966007a88",
+      "x": 5715,
+      "y": -1,
+      "width": 390,
+      "height": 1320
+    },
+    "base_fee_splitter": {
+      "id": "28e1e5b61e3642209a16f159135b3be7",
+      "sourceScreen": "projects/5975158744056910415/screens/28e1e5b61e3642209a16f159135b3be7",
+      "x": 5244,
+      "y": -1,
+      "width": 390,
+      "height": 1192
+    },
+    "tiered_rate_builder": {
+      "id": "da08f85115d048a98ba72c1552d0bc77",
+      "sourceScreen": "projects/5975158744056910415/screens/da08f85115d048a98ba72c1552d0bc77",
+      "x": 6185,
+      "y": -1,
+      "width": 390,
+      "height": 2692
+    }
+  },
+  "metadata": {
+    "userRole": "OWNER"
+  }
+}
