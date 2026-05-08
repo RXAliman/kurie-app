@@ -24,9 +24,9 @@ An offline-first electricity submetering app for Philippine households. Provides
 - [x] Base Fee Splitter (Admin)
 - [x] Tiered Rate Builder (Admin)
 - [x] Settings / Profile screen
+- [x] Property Management (Add/Edit submeters)
 
 ## 5. Roadmap
-- [ ] Property Management (Add/Edit submeters)
 - [ ] Notification Center
 - [ ] Dispute/Query system
 

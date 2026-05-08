@@ -37,18 +37,23 @@ class KurieColors {
   static const Color surfaceTint = Color(0xFF006875);
   static const Color primaryFixed = Color(0xFF9CF0FF);
   static const Color primaryFixedDim = Color(0xFF00DAF3);
+  static const Color onPrimaryFixed = Color(0xFF001F24);
 
   // ── Secondary ──
   static const Color secondary = Color(0xFF545F73);
   static const Color onSecondary = Color(0xFFFFFFFF);
   static const Color secondaryContainer = Color(0xFFD5E0F8);
   static const Color onSecondaryContainer = Color(0xFF586377);
+  static const Color secondaryFixed = Color(0xFFD8E3FA);
+  static const Color onSecondaryFixed = Color(0xFF111C2D);
 
   // ── Tertiary (Amber) ──
   static const Color tertiary = Color(0xFF7D5700);
   static const Color onTertiary = Color(0xFFFFFFFF);
   static const Color tertiaryContainer = Color(0xFFFFC865);
   static const Color onTertiaryContainer = Color(0xFF765300);
+  static const Color tertiaryFixed = Color(0xFFFFDEA9);
+  static const Color onTertiaryFixed = Color(0xFF271900);
 
   // ── Error ──
   static const Color error = Color(0xFFBA1A1A);

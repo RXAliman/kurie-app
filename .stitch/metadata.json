@@ -111,6 +111,30 @@
       "y": -1,
       "width": 390,
       "height": 2692
+    },
+    "settings_profile": {
+      "id": "0af6e201c8784a1787e9a7a7a6d16c65",
+      "sourceScreen": "projects/5975158744056910415/screens/0af6e201c8784a1787e9a7a7a6d16c65",
+      "x": 6655,
+      "y": -1,
+      "width": 390,
+      "height": 1200
+    },
+    "property_management": {
+      "id": "d00c273ce4474f2cbcfcfff8c9a6222b",
+      "sourceScreen": "projects/5975158744056910415/screens/d00c273ce4474f2cbcfcfff8c9a6222b",
+      "x": 8992,
+      "y": -1,
+      "width": 390,
+      "height": 1053
+    },
+    "add_submeter": {
+      "id": "1ec2b6651bc54a95970886e430da8e4b",
+      "sourceScreen": "projects/5975158744056910415/screens/1ec2b6651bc54a95970886e430da8e4b",
+      "x": 9462,
+      "y": -1,
+      "width": 390,
+      "height": 1442
     }
   },
   "metadata": {

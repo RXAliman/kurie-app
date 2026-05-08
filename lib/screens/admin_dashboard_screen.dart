@@ -139,9 +139,9 @@ class AdminDashboardScreen extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: _buildActionCard(
-                  icon: Icons.receipt_long_rounded,
-                  label: 'Finalize Bill',
-                  onTap: () {},
+                  icon: Icons.home_work_rounded,
+                  label: 'Property',
+                  onTap: () => Navigator.of(context).pushNamed('/property_mgmt'),
                 ),
               ),
               const SizedBox(width: 8),

@@ -1,23 +1,24 @@
 ---
-page: property_management
+page: notification_center
 ---
-A Property Management screen for the Kurie app. This screen allows Admins to view all active submeters, add new ones, and edit existing tenant assignments.
+A Notification Center screen for the Kurie app. This screen displays alerts for both Admins and Tenants.
 
 **Page Structure:**
-1. Header with property name (Eastwood Residences) and "Add Submeter" primary button.
-2. Search/Filter bar for submeter names or tenant names.
-3. List of Submeters:
-   - Each item shows submeter name (e.g., "Unit 4B"), assigned tenant, and "Last Reading" date.
-   - Status tag (Active/Inactive).
-   - "Manage" button for each item.
-4. "Add Submeter" Modal/Form fields:
-   - Submeter Name
-   - Initial Reading (kWh)
-   - Tenant Assignment (Dropdown)
-   - Property Location details
+1. Header: Title \"Notifications\" with a \"Mark all as read\" action.
+2. Tab switcher: \"All\" and \"Urgent\".
+3. Notification List:
+   - Items use the `card-data` style but with more vertical density.
+   - Each item includes:
+     - Icon (e.g., `receipt_long` for bills, `speed` for readings, `warning` for alerts).
+     - Title (e.g., \"New Bill Available\", \"Reading Due Tomorrow\").
+     - Description (e.g., \"Your bill for October has been finalized.\").
+     - Time stamp (e.g., \"2h ago\").
+     - Unread indicator (Neon Blue dot).
+4. Empty State:
+   - Illustration (utility-chic style) and text \"You're all caught up!\".
 
 **Design:**
-- Use `card-data` style for submeter items.
-- Status tags use `primary-fixed` (Active) or `outline-variant` (Inactive).
-- Form inputs follow `input-field` system tokens.
-- Follow the high-contrast, utility-chic aesthetic.
+- High-contrast minimalism.
+- Use `tertiary-amber` for urgent alerts.
+- Smooth slide-to-dismiss animations (implied for Flutter).
+- Follow the 8px grid and 4px rounding rules.
