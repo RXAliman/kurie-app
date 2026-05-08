@@ -7,6 +7,7 @@ import 'screens/log_meter_reading_screen.dart';
 import 'screens/billing_config_screen.dart';
 import 'screens/property_management_screen.dart';
 import 'screens/add_submeter_screen.dart';
+import 'screens/notification_center_screen.dart';
 
 void main() {
   runApp(const KurieApp());
@@ -30,6 +31,7 @@ class KurieApp extends StatelessWidget {
         '/billing_config': (context) => const BillingConfigScreen(),
         '/property_mgmt': (context) => const PropertyManagementScreen(),
         '/add_submeter': (context) => const AddSubmeterScreen(),
+        '/notifications': (context) => const NotificationCenterScreen(),
       },
     );
   }

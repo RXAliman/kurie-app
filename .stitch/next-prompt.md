@@ -1,24 +1,24 @@
 ---
-page: notification_center
+page: dispute_resolution
 ---
-A Notification Center screen for the Kurie app. This screen displays alerts for both Admins and Tenants.
+A Dispute Resolution / Query screen for the Kurie app. This screen allows Tenants to flag issues with their bills and Admins to resolve them.
 
 **Page Structure:**
-1. Header: Title \"Notifications\" with a \"Mark all as read\" action.
-2. Tab switcher: \"All\" and \"Urgent\".
-3. Notification List:
-   - Items use the `card-data` style but with more vertical density.
-   - Each item includes:
-     - Icon (e.g., `receipt_long` for bills, `speed` for readings, `warning` for alerts).
-     - Title (e.g., \"New Bill Available\", \"Reading Due Tomorrow\").
-     - Description (e.g., \"Your bill for October has been finalized.\").
-     - Time stamp (e.g., \"2h ago\").
-     - Unread indicator (Neon Blue dot).
-4. Empty State:
-   - Illustration (utility-chic style) and text \"You're all caught up!\".
+1. Header: Title \"Query Calculation\" or \"Dispute Resolution\".
+2. Context Card:
+   - Summary of the disputed bill (Month, Amount, kWh).
+   - Status tag (e.g., \"Pending Review\", \"Resolved\").
+3. Message Thread:
+   - A minimalist chat/log interface.
+   - Tenant's initial query (e.g., \"My usage seems too high for this month.\").
+   - Admin's response field.
+4. Action Bar (Admin only):
+   - \"Adjust Reading\" (re-opens the reading logger with current values).
+   - \"Mark as Resolved\".
+5. Metadata:
+   - Linked submeter and tenant name.
 
 **Design:**
-- High-contrast minimalism.
-- Use `tertiary-amber` for urgent alerts.
-- Smooth slide-to-dismiss animations (implied for Flutter).
-- Follow the 8px grid and 4px rounding rules.
+- Use `tertiary-amber` for the pending status and alert icons.
+- Follow the \"utility-chic\" aesthetic—crisp, high-contrast, no shadows.
+- 8px grid, 4px rounding.

@@ -25,9 +25,9 @@ An offline-first electricity submetering app for Philippine households. Provides
 - [x] Tiered Rate Builder (Admin)
 - [x] Settings / Profile screen
 - [x] Property Management (Add/Edit submeters)
+- [x] Notification Center
 
 ## 5. Roadmap
-- [ ] Notification Center
 - [ ] Dispute/Query system
 
 ## 6. Creative Freedom

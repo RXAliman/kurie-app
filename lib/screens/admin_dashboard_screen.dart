@@ -49,7 +49,7 @@ class AdminDashboardScreen extends StatelessWidget {
                 ],
               ),
               IconButton(
-                onPressed: () {},
+                onPressed: () => Navigator.of(context).pushNamed('/notifications'),
                 icon: const Icon(Icons.notifications_outlined),
                 style: IconButton.styleFrom(
                   backgroundColor: KurieColors.surfaceContainerHigh,

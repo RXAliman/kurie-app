@@ -135,6 +135,14 @@
       "y": -1,
       "width": 390,
       "height": 1442
+    },
+    "notification_center": {
+      "id": "88cbb75de9a4425ca4fa803019eb3c89",
+      "sourceScreen": "projects/5975158744056910415/screens/88cbb75de9a4425ca4fa803019eb3c89",
+      "x": 9932,
+      "y": -1,
+      "width": 390,
+      "height": 1768
     }
   },
   "metadata": {
