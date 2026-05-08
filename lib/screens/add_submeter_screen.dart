@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../app/theme/kurie_colors.dart';
 import '../data/models/submeter.dart';
-import '../data/services/database_service.dart';
+import '../data/models/reading.dart';
+import '../data/repositories/app_repository.dart';
 
 /// Add New Submeter screen — matches Stitch "Add Submeter" design.
 /// Form for provisioning a new unit with initial readings and tenant assignment.
@@ -67,7 +69,7 @@ class _AddSubmeterScreenState extends State<AddSubmeterScreen> {
               _dropdownField(
                 label: 'Assign Tenant',
                 hint: 'Select an existing tenant',
-                items: ['Alice Johnson', 'Bob Smith', 'Charlie Davis', 'Unassigned'],
+                items: ['Unassigned'],
                 value: _selectedTenant,
                 onChanged: (v) => setState(() => _selectedTenant = v),
               ),
@@ -89,6 +91,7 @@ class _AddSubmeterScreenState extends State<AddSubmeterScreen> {
                     if (_formKey.currentState!.validate()) {
                       final navigator = Navigator.of(context);
                       final messenger = ScaffoldMessenger.of(context);
+                      final appRepo = context.read<AppRepository>();
 
                       final newSubmeter = Submeter(
                         id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -98,19 +101,35 @@ class _AddSubmeterScreenState extends State<AddSubmeterScreen> {
                         lastReading: _readingController.text,
                         status: 'Active',
                       );
-                      
-                      await DatabaseService().addSubmeter(newSubmeter);
+
+                      await appRepo.addSubmeter(newSubmeter);
+
+                      // Also create an initial reading record if provided
+                      if (_readingController.text.isNotEmpty) {
+                        final initialValue = double.tryParse(_readingController.text) ?? 0.0;
+                        final initialReading = Reading(
+                          id: 'init_${newSubmeter.id}',
+                          submeterId: newSubmeter.id,
+                          timestamp: DateTime.now(),
+                          value: initialValue,
+                        );
+                        await appRepo.addReading(initialReading);
+                      }
 
                       navigator.pop();
                       messenger.showSnackBar(
-                        const SnackBar(content: Text('Submeter added successfully')),
+                        const SnackBar(
+                          content: Text('Submeter added successfully'),
+                        ),
                       );
                     }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: KurieColors.primary,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
                   ),
                   child: const Text(
                     'Save Submeter',
@@ -194,7 +213,10 @@ class _AddSubmeterScreenState extends State<AddSubmeterScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             color: KurieColors.surfaceContainerLowest,
-            border: Border.all(color: KurieColors.outlineVariant, style: BorderStyle.solid),
+            border: Border.all(
+              color: KurieColors.outlineVariant,
+              style: BorderStyle.solid,
+            ),
             borderRadius: BorderRadius.circular(4),
           ),
           child: DropdownButtonHideUnderline(

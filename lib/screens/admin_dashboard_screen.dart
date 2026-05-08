@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../app/theme/kurie_colors.dart';
-import '../data/models/submeter.dart';
-import '../data/services/database_service.dart';
+import '../data/repositories/app_repository.dart';
 
 /// Admin Dashboard — matches Stitch "Admin Dashboard" screen.
 /// Shows total sub-user contributions, trend alerts, and active submeters.
@@ -13,22 +13,10 @@ class AdminDashboardScreen extends StatefulWidget {
 }
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
-  List<Submeter> _submeters = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadData();
-  }
-
-  void _loadData() {
-    setState(() {
-      _submeters = DatabaseService().getAllSubmeters();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    final submeters = context.watch<AppRepository>().submeters;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
       child: Column(
@@ -88,8 +76,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           const SizedBox(height: 16),
 
           // Trend Alert
-          _buildTrendAlert(),
-          const SizedBox(height: 24),
+          if (submeters.isNotEmpty) _buildTrendAlert(),
+          if (submeters.isNotEmpty) const SizedBox(height: 24),
 
           // Active Submeters section
           Row(
@@ -109,19 +97,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
           const SizedBox(height: 12),
 
-          ..._submeters.map((meter) => Padding(
+          ...submeters.map((meter) => Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: _buildSubmeterCard(
               name: meter.name,
               currentReading: meter.lastReading,
-              usage: '132 kWh', // Placeholder until reading logic is fully connected
-              amount: '₱1,518.00', // Placeholder
-              trend: meter.status == 'Active' ? '+8%' : '0%',
-              trendUp: meter.status == 'Active',
+              usage: '0 kWh', // Need real reading comparison logic for usage
+              amount: '₱0.00', // Need billing rate logic
+              trend: '0%',
+              trendUp: false,
             ),
           )),
 
-          if (_submeters.isEmpty)
+          if (submeters.isEmpty)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),
@@ -233,7 +221,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            '₱3,400.00',
+            '₱0.00',
             style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 40,
@@ -246,7 +234,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Your remaining master balance: ₱1,100.00',
+            'Your remaining master balance: ₱0.00',
             style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 14,
@@ -292,7 +280,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Contributions are up +12% vs last cycle. Expect higher overall returns if usage maintains current trajectory.',
+                  'Real-time trends will appear here as you log more readings over time.',
                   style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 14,

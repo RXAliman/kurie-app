@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../app/theme/kurie_colors.dart';
 import '../data/models/notification_item.dart';
-import '../data/services/database_service.dart';
+import '../data/repositories/app_repository.dart';
 
 /// Notification Center screen — matches Stitch "Notification Center" design.
 /// Displays system alerts, billing updates, and reading reminders.
@@ -15,19 +16,10 @@ class NotificationCenterScreen extends StatefulWidget {
 class _NotificationCenterScreenState extends State<NotificationCenterScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  List<NotificationItem> _notifications = [];
-
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _loadData();
-  }
-
-  void _loadData() {
-    setState(() {
-      _notifications = DatabaseService().getAllNotifications();
-    });
   }
 
   IconData _getIconForType(String type) {
@@ -58,6 +50,8 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
 
   @override
   Widget build(BuildContext context) {
+    final notifications = context.watch<AppRepository>().notifications;
+
     return Scaffold(
       backgroundColor: KurieColors.surface,
       appBar: AppBar(
@@ -75,7 +69,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
         ),
         actions: [
           TextButton(
-            onPressed: () {},
+            onPressed: () => context.read<AppRepository>().markAllNotificationsAsRead(),
             child: Text(
               'Mark all as read',
               style: TextStyle(
@@ -128,17 +122,17 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildNotificationList(urgentOnly: false),
-          _buildNotificationList(urgentOnly: true),
+          _buildNotificationList(notifications, urgentOnly: false),
+          _buildNotificationList(notifications, urgentOnly: true),
         ],
       ),
     );
   }
 
-  Widget _buildNotificationList({required bool urgentOnly}) {
+  Widget _buildNotificationList(List<NotificationItem> notifications, {required bool urgentOnly}) {
     final filteredList = urgentOnly 
-        ? _notifications.where((n) => n.isUrgent).toList() 
-        : _notifications;
+        ? notifications.where((n) => n.isUrgent).toList() 
+        : notifications;
 
     if (filteredList.isEmpty) {
       return _buildEmptyState();
@@ -152,6 +146,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
         final item = filteredList[index];
         return InkWell(
           onTap: () {
+            context.read<AppRepository>().markNotificationAsRead(item.id);
             if (item.isUrgent) {
               Navigator.of(context).pushNamed('/dispute_resolution');
             }
@@ -290,7 +285,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
             ),
             const SizedBox(height: 32),
             OutlinedButton(
-              onPressed: () {},
+              onPressed: () => Navigator.of(context).pushNamed('/ledger_history'),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: KurieColors.outlineVariant),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),

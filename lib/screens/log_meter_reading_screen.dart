@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../app/theme/kurie_colors.dart';
+import '../data/models/reading.dart';
+import '../data/repositories/app_repository.dart';
 
 /// Log Meter Reading screen — Admin only.
 /// Matches Stitch "Log Meter Reading" screen.
@@ -12,8 +15,7 @@ class LogMeterReadingScreen extends StatefulWidget {
 
 class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
   final _readingController = TextEditingController();
-  String? _selectedSubmeter;
-  final _lastReading = 12450;
+  String? _selectedSubmeterId;
 
   @override
   void dispose() {
@@ -23,6 +25,12 @@ class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final submeters = context.watch<AppRepository>().submeters;
+    final selectedSubmeter = _selectedSubmeterId != null 
+        ? submeters.firstWhere((s) => s.id == _selectedSubmeterId)
+        : null;
+    final lastReading = selectedSubmeter?.lastReading ?? '0';
+
     return Scaffold(
       backgroundColor: KurieColors.surface,
       appBar: AppBar(
@@ -52,13 +60,14 @@ class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
                 Icon(Icons.info_outline_rounded, size: 18, color: KurieColors.primary),
                 const SizedBox(width: 8),
                 Expanded(child: Text(
-                  'Reading must be greater than or equal to $_lastReading.',
+                  'Last reading: $lastReading kWh.',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500,
                       color: KurieColors.primary),
                 )),
               ]),
             ),
             const SizedBox(height: 24),
+
 
             // Select submeter
             Text('SUBMETER', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700,
@@ -74,13 +83,13 @@ class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
-                  value: _selectedSubmeter,
+                  value: _selectedSubmeterId,
                   hint: Text('Select submeter', style: TextStyle(color: KurieColors.outline)),
                   isExpanded: true,
-                  items: ['Basement Apartment', 'Detached Garage', 'Guest Suite']
-                      .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                  items: submeters
+                      .map((s) => DropdownMenuItem(value: s.id, child: Text(s.name)))
                       .toList(),
-                  onChanged: (v) => setState(() => _selectedSubmeter = v),
+                  onChanged: (v) => setState(() => _selectedSubmeterId = v),
                 ),
               ),
             ),
@@ -139,12 +148,34 @@ class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
             SizedBox(
               width: double.infinity, height: 48,
               child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Reading logged successfully'),
-                        backgroundColor: KurieColors.primary),
+                onPressed: () async {
+                  if (_selectedSubmeterId == null || _readingController.text.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please select a submeter and enter a reading')),
+                    );
+                    return;
+                  }
+
+                  final navigator = Navigator.of(context);
+                  final messenger = ScaffoldMessenger.of(context);
+                  final appRepo = context.read<AppRepository>();
+
+                  final newValue = double.tryParse(_readingController.text) ?? 0.0;
+                  final newReading = Reading(
+                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    submeterId: _selectedSubmeterId!,
+                    timestamp: DateTime.now(),
+                    value: newValue,
                   );
-                  Navigator.of(context).pop();
+
+                  await appRepo.addReading(newReading);
+
+                  if (!mounted) return;
+
+                  messenger.showSnackBar(
+                    const SnackBar(content: Text('Reading logged successfully')),
+                  );
+                  navigator.pop();
                 },
                 child: const Text('Submit Reading'),
               ),

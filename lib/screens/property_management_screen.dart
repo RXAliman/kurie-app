@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../app/theme/kurie_colors.dart';
-import '../data/models/submeter.dart';
-import '../data/services/database_service.dart';
+import '../data/repositories/app_repository.dart';
 import 'add_submeter_screen.dart';
 
 /// Property Management screen — matches Stitch "Property Management" design.
@@ -16,22 +16,10 @@ class PropertyManagementScreen extends StatefulWidget {
 class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
   final TextEditingController _searchController = TextEditingController();
 
-  List<Submeter> _submeters = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadData();
-  }
-
-  void _loadData() {
-    setState(() {
-      _submeters = DatabaseService().getAllSubmeters();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    final submeters = context.watch<AppRepository>().submeters;
+
     return Scaffold(
       backgroundColor: KurieColors.surface,
       appBar: AppBar(
@@ -67,7 +55,7 @@ class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Eastwood Residences',
+                  'My Property',
                   style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 24,
@@ -77,7 +65,7 @@ class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${_submeters.length} Submeters Total',
+                  '${submeters.length} Submeters Total',
                   style: const TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 14,
@@ -87,6 +75,9 @@ class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
               ],
             ),
           ),
+          
+          // ... rest of the build method
+
 
           // Search Bar
           Padding(
@@ -112,10 +103,10 @@ class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
           Expanded(
             child: ListView.separated(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
-              itemCount: _submeters.length,
+              itemCount: submeters.length,
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
-                final meter = _submeters[index];
+                final meter = submeters[index];
                 final isActive = meter.status == 'Active';
 
                 return Container(

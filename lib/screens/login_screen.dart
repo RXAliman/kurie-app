@@ -174,7 +174,11 @@ class _LoginScreenState extends State<LoginScreen> {
             height: 48,
             child: OutlinedButton.icon(
               onPressed: () {},
-              icon: const Icon(Icons.g_mobiledata_rounded, size: 24),
+              icon: Image.asset(
+                'lib/app/assets/google-icon.webp',
+                width: 24,
+                height: 24,
+              ),
               label: const Text('Continue with Google'),
             ),
           ),
@@ -184,7 +188,11 @@ class _LoginScreenState extends State<LoginScreen> {
             height: 48,
             child: OutlinedButton.icon(
               onPressed: () {},
-              icon: const Icon(Icons.facebook, size: 24),
+              icon: Image.asset(
+                'lib/app/assets/facebook-icon.webp',
+                width: 24,
+                height: 24,
+              ),
               label: const Text('Continue with Facebook'),
             ),
           ),

@@ -4,6 +4,7 @@
 
 import 'package:hive_ce/hive_ce.dart';
 import 'package:kurie/data/models/bill.dart';
+import 'package:kurie/data/models/dispute.dart';
 import 'package:kurie/data/models/notification_item.dart';
 import 'package:kurie/data/models/reading.dart';
 import 'package:kurie/data/models/submeter.dart';
@@ -11,6 +12,7 @@ import 'package:kurie/data/models/submeter.dart';
 extension HiveRegistrar on HiveInterface {
   void registerAdapters() {
     registerAdapter(BillAdapter());
+    registerAdapter(DisputeAdapter());
     registerAdapter(NotificationItemAdapter());
     registerAdapter(ReadingAdapter());
     registerAdapter(SubmeterAdapter());
@@ -20,6 +22,7 @@ extension HiveRegistrar on HiveInterface {
 extension IsolatedHiveRegistrar on IsolatedHiveInterface {
   void registerAdapters() {
     registerAdapter(BillAdapter());
+    registerAdapter(DisputeAdapter());
     registerAdapter(NotificationItemAdapter());
     registerAdapter(ReadingAdapter());
     registerAdapter(SubmeterAdapter());

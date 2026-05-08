@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../app/theme/kurie_colors.dart';
+import '../data/repositories/app_repository.dart';
 
 /// Dispute Resolution screen — matches Stitch "Dispute Resolution" design.
 /// Allows admins to review and resolve tenant queries about bills.
@@ -13,23 +15,11 @@ class DisputeResolutionScreen extends StatefulWidget {
 class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
   final TextEditingController _messageController = TextEditingController();
 
-  final List<Map<String, dynamic>> _messages = [
-    {
-      'isSystem': false,
-      'sender': 'Alice Johnson',
-      'text': 'I was away for two weeks in October, but my usage is higher than September. Could you double-check the reading?',
-      'time': '15m ago',
-    },
-    {
-      'isSystem': true,
-      'sender': 'System',
-      'text': 'Dispute opened. Admin notified.',
-      'time': '14m ago',
-    },
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final disputes = context.watch<AppRepository>().disputes;
+    final pendingDisputes = disputes.where((d) => d.status == 'Pending').toList();
+
     return Scaffold(
       backgroundColor: KurieColors.surface,
       appBar: AppBar(
@@ -50,44 +40,61 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+      body: pendingDisputes.isEmpty
+          ? Center(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Context Card
-                  _buildContextCard(),
-                  const SizedBox(height: 32),
-
-                  // Message Thread
-                  Text(
-                    'MESSAGE HISTORY',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.0,
-                      color: KurieColors.onSurfaceVariant,
-                    ),
-                  ),
+                  Icon(Icons.check_circle_outline_rounded, size: 48, color: KurieColors.outline),
                   const SizedBox(height: 16),
-                  ..._messages.map((m) => _buildMessageItem(m)),
+                  Text('No pending disputes found',
+                      style: TextStyle(color: KurieColors.onSurfaceVariant)),
                 ],
               ),
-            ),
-          ),
+            )
+          : Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Context Card for the first pending dispute
+                        _buildContextCard(pendingDisputes.first),
+                        const SizedBox(height: 32),
 
-          // Admin Actions & Input
-          _buildAdminControls(),
-        ],
-      ),
+                        // Message Thread (Placeholder for now)
+                        Text(
+                          'MESSAGE HISTORY',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.0,
+                            color: KurieColors.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildMessageItem({
+                          'isSystem': false,
+                          'sender': pendingDisputes.first.tenantName,
+                          'text': 'I have a concern about my last reading.',
+                          'time': 'Just now',
+                        }),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Admin Actions & Input
+                _buildAdminControls(),
+              ],
+            ),
     );
   }
 
-  Widget _buildContextCard() {
+  Widget _buildContextCard(dynamic dispute) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -102,7 +109,7 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Disputed Bill: Oct 2023',
+                'Disputed Bill: ${dispute.billCycle}',
                 style: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 14,
@@ -118,11 +125,11 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
                   border: Border.all(color: KurieColors.tertiary.withAlpha(76)),
                 ),
                 child: Text(
-                  'Pending Review',
+                  dispute.status.toUpperCase(),
                   style: TextStyle(
                     fontFamily: 'Inter',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
                     color: KurieColors.tertiary,
                   ),
                 ),
@@ -132,9 +139,9 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
           const SizedBox(height: 16),
           Row(
             children: [
-              _buildMetric('₱1,518.00', 'AMOUNT'),
+              _buildMetric('₱${dispute.amount.toStringAsFixed(2)}', 'AMOUNT'),
               const SizedBox(width: 32),
-              _buildMetric('132 kWh', 'USAGE'),
+              _buildMetric('${dispute.usage.toInt()} kWh', 'USAGE'),
             ],
           ),
           const SizedBox(height: 16),
@@ -145,7 +152,7 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
               Icon(Icons.person_outline_rounded, size: 16, color: KurieColors.outline),
               const SizedBox(width: 8),
               Text(
-                'Unit 4B - Alice Johnson',
+                'Submeter ${dispute.submeterId} - ${dispute.tenantName}',
                 style: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 13,

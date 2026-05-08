@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'data/services/database_service.dart';
+import 'package:provider/provider.dart';
+import 'data/repositories/app_repository.dart';
 import 'app/theme/kurie_theme.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/login_screen.dart';
@@ -13,8 +14,15 @@ import 'screens/dispute_resolution_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await DatabaseService().init();
-  runApp(const KurieApp());
+  final repository = AppRepository();
+  await repository.init();
+
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => repository,
+      child: const KurieApp(),
+    ),
+  );
 }
 
 class KurieApp extends StatelessWidget {

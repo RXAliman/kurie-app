@@ -1,0 +1,89 @@
+import 'package:flutter/foundation.dart';
+import '../models/submeter.dart';
+import '../models/reading.dart';
+import '../models/notification_item.dart';
+import '../services/database_service.dart';
+import '../models/dispute.dart';
+
+class AppRepository extends ChangeNotifier {
+  final DatabaseService _db = DatabaseService();
+
+  List<Submeter> _submeters = [];
+  List<NotificationItem> _notifications = [];
+  List<Reading> _readings = [];
+  List<Dispute> _disputes = [];
+
+  List<Submeter> get submeters => _submeters;
+  List<NotificationItem> get notifications => _notifications;
+  List<Reading> get readings => _readings;
+  List<Dispute> get disputes => _disputes;
+
+  Future<void> init() async {
+    await _db.init();
+    _loadData();
+  }
+
+  void _loadData() {
+    _submeters = _db.getAllSubmeters();
+    _notifications = _db.getAllNotifications();
+    _readings = _db.getAllReadings();
+    _disputes = _db.getAllDisputes();
+    notifyListeners();
+  }
+
+  Future<void> addSubmeter(Submeter submeter) async {
+    await _db.addSubmeter(submeter);
+    _loadData();
+  }
+
+  Future<void> updateSubmeter(Submeter submeter) async {
+    await _db.updateSubmeter(submeter);
+    _loadData();
+  }
+
+  Future<void> addReading(Reading reading) async {
+    await _db.addReading(reading);
+    
+    // Also update the submeter's last reading
+    final submeterIndex = _submeters.indexWhere((s) => s.id == reading.submeterId);
+    if (submeterIndex != -1) {
+      final submeter = _submeters[submeterIndex];
+      final updatedSubmeter = Submeter(
+        id: submeter.id,
+        name: submeter.name,
+        unit: submeter.unit,
+        tenantId: submeter.tenantId,
+        lastReading: reading.value.toStringAsFixed(2),
+        status: submeter.status,
+      );
+      await _db.updateSubmeter(updatedSubmeter);
+    }
+    
+    _loadData();
+  }
+
+  Future<void> addNotification(NotificationItem notification) async {
+    await _db.addNotification(notification);
+    _loadData();
+  }
+
+  Future<void> markNotificationAsRead(String id) async {
+    await _db.markNotificationAsRead(id);
+    _loadData();
+  }
+
+  Future<void> markAllNotificationsAsRead() async {
+    await _db.markAllNotificationsAsRead();
+    _loadData();
+  }
+
+  Future<void> clearAllData() async {
+    await _db.clearAllData();
+    _loadData();
+  }
+
+  // Refresh data explicitly if needed
+  void refresh() {
+    _loadData();
+  }
+}
