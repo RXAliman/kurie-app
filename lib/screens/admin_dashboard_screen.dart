@@ -1,10 +1,31 @@
 import 'package:flutter/material.dart';
 import '../app/theme/kurie_colors.dart';
+import '../data/models/submeter.dart';
+import '../data/services/database_service.dart';
 
 /// Admin Dashboard — matches Stitch "Admin Dashboard" screen.
 /// Shows total sub-user contributions, trend alerts, and active submeters.
-class AdminDashboardScreen extends StatelessWidget {
+class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
+
+  @override
+  State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+}
+
+class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
+  List<Submeter> _submeters = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  void _loadData() {
+    setState(() {
+      _submeters = DatabaseService().getAllSubmeters();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,32 +109,34 @@ class AdminDashboardScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          _buildSubmeterCard(
-            name: 'Basement Apartment',
-            currentReading: '12,582',
-            usage: '132 kWh',
-            amount: '₱1,518.00',
-            trend: '+8%',
-            trendUp: true,
-          ),
-          const SizedBox(height: 8),
-          _buildSubmeterCard(
-            name: 'Detached Garage',
-            currentReading: '4,215',
-            usage: '45 kWh',
-            amount: '₱517.50',
-            trend: '-3%',
-            trendUp: false,
-          ),
-          const SizedBox(height: 8),
-          _buildSubmeterCard(
-            name: 'Guest Suite',
-            currentReading: '8,901',
-            usage: '78 kWh',
-            amount: '₱897.00',
-            trend: '+15%',
-            trendUp: true,
-          ),
+          ..._submeters.map((meter) => Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: _buildSubmeterCard(
+              name: meter.name,
+              currentReading: meter.lastReading,
+              usage: '132 kWh', // Placeholder until reading logic is fully connected
+              amount: '₱1,518.00', // Placeholder
+              trend: meter.status == 'Active' ? '+8%' : '0%',
+              trendUp: meter.status == 'Active',
+            ),
+          )),
+
+          if (_submeters.isEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: KurieColors.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: KurieColors.outlineVariant),
+              ),
+              child: const Center(
+                child: Text(
+                  'No submeters added yet.',
+                  style: TextStyle(color: KurieColors.onSurfaceVariant, fontSize: 13),
+                ),
+              ),
+            ),
           const SizedBox(height: 24),
 
           // Quick Actions

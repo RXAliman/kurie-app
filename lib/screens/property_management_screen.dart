@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../app/theme/kurie_colors.dart';
+import '../data/models/submeter.dart';
+import '../data/services/database_service.dart';
 import 'add_submeter_screen.dart';
 
 /// Property Management screen — matches Stitch "Property Management" design.
@@ -14,26 +16,19 @@ class PropertyManagementScreen extends StatefulWidget {
 class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
   final TextEditingController _searchController = TextEditingController();
 
-  final List<Map<String, dynamic>> _submeters = [
-    {
-      'name': 'Unit 4B',
-      'tenant': 'Alice Johnson',
-      'lastReading': 'Oct 20, 2023',
-      'status': 'Active',
-    },
-    {
-      'name': 'Unit 7A',
-      'tenant': 'Bob Smith',
-      'lastReading': 'Oct 18, 2023',
-      'status': 'Active',
-    },
-    {
-      'name': 'Basement Apt',
-      'tenant': 'Charlie Davis',
-      'lastReading': 'Oct 15, 2023',
-      'status': 'Inactive',
-    },
-  ];
+  List<Submeter> _submeters = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  void _loadData() {
+    setState(() {
+      _submeters = DatabaseService().getAllSubmeters();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +116,7 @@ class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final meter = _submeters[index];
-                final isActive = meter['status'] == 'Active';
+                final isActive = meter.status == 'Active';
 
                 return Container(
                   padding: const EdgeInsets.all(16),
@@ -137,7 +132,7 @@ class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            meter['name'],
+                            meter.name,
                             style: const TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 16,
@@ -151,7 +146,7 @@ class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                              meter['status'].toUpperCase(),
+                              meter.status.toUpperCase(),
                               style: TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 10,
@@ -163,9 +158,9 @@ class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      _infoRow(Icons.person_outline_rounded, 'Tenant: ${meter['tenant']}'),
+                      _infoRow(Icons.person_outline_rounded, 'Tenant: ${meter.tenantId}'),
                       const SizedBox(height: 4),
-                      _infoRow(Icons.history_rounded, 'Last Reading: ${meter['lastReading']}'),
+                      _infoRow(Icons.history_rounded, 'Last Reading: ${meter.lastReading}'),
                       const SizedBox(height: 16),
                       SizedBox(
                         width: double.infinity,

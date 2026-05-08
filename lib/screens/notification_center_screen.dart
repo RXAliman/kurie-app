@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../app/theme/kurie_colors.dart';
+import '../data/models/notification_item.dart';
+import '../data/services/database_service.dart';
 
 /// Notification Center screen — matches Stitch "Notification Center" design.
 /// Displays system alerts, billing updates, and reading reminders.
@@ -13,45 +15,39 @@ class NotificationCenterScreen extends StatefulWidget {
 class _NotificationCenterScreenState extends State<NotificationCenterScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  final List<Map<String, dynamic>> _notifications = [
-    {
-      'icon': Icons.warning_rounded,
-      'title': 'Urgent: Disputed Reading',
-      'description': 'Tenant at Unit 4B has flagged a calculation error.',
-      'time': '15m ago',
-      'isUrgent': true,
-      'isRead': false,
-    },
-    {
-      'icon': Icons.receipt_long_rounded,
-      'title': 'Bill Finalized',
-      'description': 'October bill for Eastwood Residences is ready for review.',
-      'time': '2h ago',
-      'isUrgent': false,
-      'isRead': false,
-    },
-    {
-      'icon': Icons.speed_rounded,
-      'title': 'Reading Reminder',
-      'description': 'Scheduled monthly meter reading for Basement Apt is due tomorrow.',
-      'time': '5h ago',
-      'isUrgent': false,
-      'isRead': true,
-    },
-    {
-      'icon': Icons.account_circle_rounded,
-      'title': 'New Tenant Joined',
-      'description': 'Alice Johnson has linked to Unit 4B.',
-      'time': '1d ago',
-      'isUrgent': false,
-      'isRead': true,
-    },
-  ];
+  List<NotificationItem> _notifications = [];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _loadData();
+  }
+
+  void _loadData() {
+    setState(() {
+      _notifications = DatabaseService().getAllNotifications();
+    });
+  }
+
+  IconData _getIconForType(String type) {
+    switch (type) {
+      case 'dispute':
+        return Icons.warning_rounded;
+      case 'billing':
+        return Icons.receipt_long_rounded;
+      case 'reading':
+        return Icons.speed_rounded;
+      default:
+        return Icons.notifications_rounded;
+    }
+  }
+
+  String _formatTimestamp(DateTime dt) {
+    final diff = DateTime.now().difference(dt);
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
   }
 
   @override
@@ -141,7 +137,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
 
   Widget _buildNotificationList({required bool urgentOnly}) {
     final filteredList = urgentOnly 
-        ? _notifications.where((n) => n['isUrgent']).toList() 
+        ? _notifications.where((n) => n.isUrgent).toList() 
         : _notifications;
 
     if (filteredList.isEmpty) {
@@ -156,7 +152,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
         final item = filteredList[index];
         return InkWell(
           onTap: () {
-            if (item['isUrgent']) {
+            if (item.isUrgent) {
               Navigator.of(context).pushNamed('/dispute_resolution');
             }
           },
@@ -166,9 +162,9 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
     );
   }
 
-  Widget _buildNotificationCard(Map<String, dynamic> item) {
-    final bool isUrgent = item['isUrgent'];
-    final bool isRead = item['isRead'];
+  Widget _buildNotificationCard(NotificationItem item) {
+    final bool isUrgent = item.isUrgent;
+    final bool isRead = item.isRead;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -192,7 +188,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
               borderRadius: BorderRadius.circular(4),
             ),
             child: Icon(
-              item['icon'],
+              _getIconForType(item.type),
               size: 20,
               color: isUrgent ? KurieColors.tertiary : KurieColors.primary,
             ),
@@ -208,7 +204,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
                   children: [
                     Expanded(
                       child: Text(
-                        item['title'],
+                        item.title,
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 14,
@@ -230,7 +226,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  item['description'],
+                  item.description,
                   style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 13,
@@ -241,7 +237,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  item['time'],
+                  _formatTimestamp(item.timestamp),
                   style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 12,

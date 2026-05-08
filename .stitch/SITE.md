@@ -29,8 +29,11 @@ An offline-first electricity submetering app for Philippine households. Provides
 - [x] Dispute/Query system
 
 ## 5. Roadmap
-- [ ] Data Persistence (Hive/SQLite integration)
-- [ ] Billing PDF Generation
+- [x] Implement local database persistence using Hive CE.
+- [x] Update screens to fetch and save data to Hive.
+- [ ] Implement Billing PDF Generation:
+    - [ ] Individual Tenant Bill Report (Detailed Statement)
+    - [ ] All Tenant Cuttable Bill Report (Grid Slips)
 
 ## 6. Creative Freedom
 - Submeter analytics with consumption charts

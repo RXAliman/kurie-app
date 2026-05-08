@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../app/theme/kurie_colors.dart';
+import '../data/models/submeter.dart';
+import '../data/services/database_service.dart';
 
 /// Add New Submeter screen — matches Stitch "Add Submeter" design.
 /// Form for provisioning a new unit with initial readings and tenant assignment.
@@ -12,7 +14,18 @@ class AddSubmeterScreen extends StatefulWidget {
 
 class _AddSubmeterScreenState extends State<AddSubmeterScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _readingController = TextEditingController();
+  final _locationController = TextEditingController();
   String? _selectedTenant;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _readingController.dispose();
+    _locationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,12 +50,14 @@ class _AddSubmeterScreenState extends State<AddSubmeterScreen> {
               _textField(
                 label: 'Submeter Name',
                 hint: 'e.g., Unit 12C',
+                controller: _nameController,
                 icon: Icons.drive_file_rename_outline_rounded,
               ),
               const SizedBox(height: 20),
               _textField(
                 label: 'Initial Reading (kWh)',
                 hint: '0.00',
+                controller: _readingController,
                 keyboardType: TextInputType.number,
                 icon: Icons.speed_rounded,
               ),
@@ -62,6 +77,7 @@ class _AddSubmeterScreenState extends State<AddSubmeterScreen> {
               _textField(
                 label: 'Property Location',
                 hint: 'e.g., North Wing, Floor 2',
+                controller: _locationController,
                 icon: Icons.location_on_outlined,
               ),
               const SizedBox(height: 48),
@@ -69,10 +85,24 @@ class _AddSubmeterScreenState extends State<AddSubmeterScreen> {
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      final navigator = Navigator.of(context);
+                      final messenger = ScaffoldMessenger.of(context);
+
+                      final newSubmeter = Submeter(
+                        id: DateTime.now().millisecondsSinceEpoch.toString(),
+                        name: _nameController.text,
+                        unit: _locationController.text,
+                        tenantId: _selectedTenant ?? 'Unassigned',
+                        lastReading: _readingController.text,
+                        status: 'Active',
+                      );
+                      
+                      await DatabaseService().addSubmeter(newSubmeter);
+
+                      navigator.pop();
+                      messenger.showSnackBar(
                         const SnackBar(content: Text('Submeter added successfully')),
                       );
                     }
@@ -111,6 +141,7 @@ class _AddSubmeterScreenState extends State<AddSubmeterScreen> {
   Widget _textField({
     required String label,
     required String hint,
+    required TextEditingController controller,
     IconData? icon,
     TextInputType? keyboardType,
   }) {
@@ -123,6 +154,7 @@ class _AddSubmeterScreenState extends State<AddSubmeterScreen> {
         ),
         const SizedBox(height: 8),
         TextFormField(
+          controller: controller,
           keyboardType: keyboardType,
           decoration: InputDecoration(
             hintText: hint,
@@ -162,7 +194,7 @@ class _AddSubmeterScreenState extends State<AddSubmeterScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             color: KurieColors.surfaceContainerLowest,
-            border: Border.all(color: KurieColors.outlineVariant),
+            border: Border.all(color: KurieColors.outlineVariant, style: BorderStyle.solid),
             borderRadius: BorderRadius.circular(4),
           ),
           child: DropdownButtonHideUnderline(

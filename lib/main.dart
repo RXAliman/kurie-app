@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'data/services/database_service.dart';
 import 'app/theme/kurie_theme.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/login_screen.dart';
@@ -10,7 +11,9 @@ import 'screens/add_submeter_screen.dart';
 import 'screens/notification_center_screen.dart';
 import 'screens/dispute_resolution_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await DatabaseService().init();
   runApp(const KurieApp());
 }
 
