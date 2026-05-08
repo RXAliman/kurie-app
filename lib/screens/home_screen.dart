@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../app/theme/kurie_colors.dart';
 import 'admin_dashboard_screen.dart';
-import 'bill_insights_screen.dart';
 import 'ledger_history_screen.dart';
+import 'settings_profile_screen.dart';
 
 /// Home shell — bottom navigation for Dashboard, Readings, Billing, Insights.
 /// Matches the bottom nav from Stitch designs.
@@ -20,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
     AdminDashboardScreen(),
     _ReadingsPlaceholder(),
     LedgerHistoryScreen(),
-    BillInsightsScreen(),
+    SettingsProfileScreen(),
   ];
 
   @override
@@ -54,11 +54,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.receipt_long_outlined),
-              label: 'Billing',
+              label: 'History',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.analytics_outlined),
-              label: 'Insights',
+              icon: Icon(Icons.person_outline_rounded),
+              label: 'Profile',
             ),
           ],
         ),

@@ -136,9 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
           TextField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(
-              hintText: 'you@example.com',
-            ),
+            decoration: const InputDecoration(hintText: 'you@example.com'),
             onSubmitted: (_) => _onContinueEmail(),
           ),
           const SizedBox(height: 24),
@@ -178,6 +176,16 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: () {},
               icon: const Icon(Icons.g_mobiledata_rounded, size: 24),
               label: const Text('Continue with Google'),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: OutlinedButton.icon(
+              onPressed: () {},
+              icon: const Icon(Icons.facebook, size: 24),
+              label: const Text('Continue with Facebook'),
             ),
           ),
         ],

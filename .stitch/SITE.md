@@ -23,11 +23,11 @@ An offline-first electricity submetering app for Philippine households. Provides
 - [x] Ledger History
 - [x] Base Fee Splitter (Admin)
 - [x] Tiered Rate Builder (Admin)
+- [x] Settings / Profile screen
 
 ## 5. Roadmap
-- [ ] Settings / Profile screen
-- [ ] Notification Center
 - [ ] Property Management (Add/Edit submeters)
+- [ ] Notification Center
 - [ ] Dispute/Query system
 
 ## 6. Creative Freedom
