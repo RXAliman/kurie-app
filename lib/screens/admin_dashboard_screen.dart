@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../app/theme/kurie_colors.dart';
 import '../data/repositories/app_repository.dart';
+import '../data/services/pdf_service.dart';
+import 'package:printing/printing.dart';
 
 /// Admin Dashboard — matches Stitch "Admin Dashboard" screen.
 /// Shows total sub-user contributions, trend alerts, and active submeters.
@@ -16,6 +18,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final submeters = context.watch<AppRepository>().submeters;
+    final readings = context.watch<AppRepository>().readings;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
@@ -58,7 +61,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ],
               ),
               IconButton(
-                onPressed: () => Navigator.of(context).pushNamed('/notifications'),
+                onPressed: () =>
+                    Navigator.of(context).pushNamed('/notifications'),
                 icon: const Icon(Icons.notifications_outlined),
                 style: IconButton.styleFrom(
                   backgroundColor: KurieColors.surfaceContainerHigh,
@@ -82,7 +86,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           // Active Submeters section
           Row(
             children: [
-              Icon(Icons.device_hub_rounded, size: 20, color: KurieColors.primary),
+              Icon(
+                Icons.device_hub_rounded,
+                size: 20,
+                color: KurieColors.primary,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Active Submeters',
@@ -97,17 +105,31 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
           const SizedBox(height: 12),
 
-          ...submeters.map((meter) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: _buildSubmeterCard(
-              name: meter.name,
-              currentReading: meter.lastReading,
-              usage: '0 kWh', // Need real reading comparison logic for usage
-              amount: '₱0.00', // Need billing rate logic
-              trend: '0%',
-              trendUp: false,
-            ),
-          )),
+          ...submeters.map((meter) {
+            final meterReadings =
+                readings.where((r) => r.submeterId == meter.id).toList()
+                  ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+
+            double usage = 0;
+            double amount = 0;
+            if (meterReadings.length >= 2) {
+              usage = meterReadings[0].value - meterReadings[1].value;
+              // Assuming a default rate of 12.0 per kWh if not configured
+              amount = usage * 12.0;
+            }
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _buildSubmeterCard(
+                name: meter.name,
+                currentReading: '${meter.lastReading} kWh',
+                usage: '${usage.toStringAsFixed(1)} kWh',
+                amount: '₱${amount.toStringAsFixed(2)}',
+                trend: '0%',
+                trendUp: false,
+              ),
+            );
+          }),
 
           if (submeters.isEmpty)
             Container(
@@ -121,7 +143,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               child: const Center(
                 child: Text(
                   'No submeters added yet.',
-                  style: TextStyle(color: KurieColors.onSurfaceVariant, fontSize: 13),
+                  style: TextStyle(
+                    color: KurieColors.onSurfaceVariant,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             ),
@@ -152,15 +177,38 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 child: _buildActionCard(
                   icon: Icons.home_work_rounded,
                   label: 'Property',
-                  onTap: () => Navigator.of(context).pushNamed('/property_mgmt'),
+                  onTap: () =>
+                      Navigator.of(context).pushNamed('/property_mgmt'),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: _buildActionCard(
-                  icon: Icons.tune_rounded,
-                  label: 'Configure',
-                  onTap: () => Navigator.of(context).pushNamed('/billing_config'),
+                  icon: Icons.summarize_rounded,
+                  label: 'Generate Summary',
+                  onTap: () async {
+                    final appRepo = context.read<AppRepository>();
+                    if (appRepo.bills.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'No bills available to generate summary. Log some readings first.',
+                          ),
+                          backgroundColor: KurieColors.tertiary,
+                        ),
+                      );
+                      return;
+                    }
+
+                    final pdfData = await PdfService.generateCuttableSlips(
+                      appRepo.bills,
+                      appRepo.submeters,
+                    );
+                    await Printing.layoutPdf(
+                      onLayout: (format) => pdfData,
+                      name: 'Kurie_Monthly_Summary.pdf',
+                    );
+                  },
                 ),
               ),
             ],
@@ -342,8 +390,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     Icon(
                       trendUp ? Icons.arrow_upward : Icons.arrow_downward,
                       size: 12,
-                      color:
-                          trendUp ? KurieColors.tertiary : KurieColors.primary,
+                      color: trendUp
+                          ? KurieColors.tertiary
+                          : KurieColors.primary,
                     ),
                     const SizedBox(width: 2),
                     Text(

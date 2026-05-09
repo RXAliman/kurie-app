@@ -56,6 +56,7 @@ class DatabaseService {
       notificationsBox.values.toList();
   List<Reading> getAllReadings() => readingsBox.values.toList();
   List<Dispute> getAllDisputes() => disputesBox.values.toList();
+  List<Bill> getAllBills() => billsBox.values.toList();
 
   Future<void> addSubmeter(Submeter submeter) async {
     await submetersBox.put(submeter.id, submeter);
@@ -98,5 +99,9 @@ class DatabaseService {
 
   Future<void> addDispute(Dispute dispute) async {
     await disputesBox.put(dispute.id, dispute);
+  }
+
+  Future<void> addBill(Bill bill) async {
+    await billsBox.put(bill.id, bill);
   }
 }

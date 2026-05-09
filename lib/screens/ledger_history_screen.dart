@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../app/theme/kurie_colors.dart';
 import '../data/models/submeter.dart';
+import '../data/models/reading.dart';
+import '../data/models/bill.dart';
 import '../data/repositories/app_repository.dart';
 
 /// Ledger History screen — paginated history of readings and bills.
@@ -19,14 +21,19 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final readings = context.watch<AppRepository>().readings;
+    final bills = context.watch<AppRepository>().bills;
     final submeters = context.watch<AppRepository>().submeters;
 
-    // Filter logic
-    final filteredReadings = readings.where((r) {
-      if (_selectedFilter == 'All') return true;
-      if (_selectedFilter == 'Readings') return true; // Currently we only have readings anyway
-      return false;
-    }).toList();
+    final List<dynamic> items = [];
+    if (_selectedFilter == 'All' || _selectedFilter == 'Readings') items.addAll(readings);
+    if (_selectedFilter == 'All' || _selectedFilter == 'Bills') items.addAll(bills);
+    
+    // Sort by timestamp descending
+    items.sort((a, b) {
+      final tA = a is Reading ? a.timestamp : (a as Bill).timestamp;
+      final tB = b is Reading ? b.timestamp : (b as Bill).timestamp;
+      return tB.compareTo(tA);
+    });
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
@@ -66,7 +73,7 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
           ),
           const SizedBox(height: 20),
 
-          if (filteredReadings.isEmpty)
+          if (items.isEmpty)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),
@@ -86,21 +93,38 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
               ),
             )
           else
-            ...filteredReadings.reversed.map((reading) {
-              // Safe submeter lookup
-              final meter = submeters.cast<Submeter?>().firstWhere(
-                (s) => s?.id == reading.submeterId,
-                orElse: () => null,
-              );
+            ...items.map((item) {
+              if (item is Reading) {
+                final meter = submeters.cast<Submeter?>().firstWhere(
+                  (s) => s?.id == item.submeterId,
+                  orElse: () => null,
+                );
 
-              return _ledgerEntry(
-                icon: Icons.electric_meter_rounded,
-                iconColor: KurieColors.onSurfaceVariant,
-                title: 'Meter Reading',
-                subtitle: '${meter?.name ?? 'Unknown Meter'} — ${reading.value} kWh',
-                amount: null,
-                date: '${reading.timestamp.day}/${reading.timestamp.month}',
-              );
+                return _ledgerEntry(
+                  icon: Icons.electric_meter_rounded,
+                  iconColor: KurieColors.onSurfaceVariant,
+                  title: 'Meter Reading',
+                  subtitle: '${meter?.name ?? 'Unknown Meter'} — ${item.value} kWh',
+                  amount: null,
+                  date: '${item.timestamp.day}/${item.timestamp.month}',
+                );
+              } else {
+                final bill = item as Bill;
+                final meter = submeters.cast<Submeter?>().firstWhere(
+                  (s) => s?.id == bill.submeterId,
+                  orElse: () => null,
+                );
+
+                return _ledgerEntry(
+                  icon: Icons.receipt_long_rounded,
+                  iconColor: KurieColors.primary,
+                  title: 'Monthly Bill',
+                  subtitle: '${meter?.name ?? 'Unknown'} — ${bill.month}',
+                  amount: 'P${bill.amount.toStringAsFixed(2)}',
+                  date: '${bill.timestamp.day}/${bill.timestamp.month}',
+                  onTap: () => Navigator.of(context).pushNamed('/bill_details', arguments: bill.id),
+                );
+              }
             }),
         ],
       ),
@@ -144,76 +168,81 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
     String? amount,
     required String date,
     bool isAlert = false,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isAlert ? Color(0xFFFFF8EB) : KurieColors.surfaceContainerLowest,
-        border: Border.all(
-          color: isAlert
-              ? KurieColors.tertiaryContainer.withAlpha(120)
-              : KurieColors.outlineVariant,
-        ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(4),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: iconColor.withAlpha(20),
-              borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isAlert ? const Color(0xFFFFF8EB) : KurieColors.surfaceContainerLowest,
+            border: Border.all(
+              color: isAlert
+                  ? KurieColors.tertiaryContainer.withAlpha(120)
+                  : KurieColors.outlineVariant,
             ),
-            child: Icon(icon, size: 18, color: iconColor),
+            borderRadius: BorderRadius.circular(4),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: isAlert
-                        ? KurieColors.tertiary
-                        : KurieColors.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: KurieColors.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          child: Row(
             children: [
-              if (amount != null)
-                Text(
-                  amount,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: KurieColors.onSurface,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: iconColor.withAlpha(20),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              Text(
-                date,
-                style: TextStyle(fontSize: 11, color: KurieColors.outline),
+                child: Icon(icon, size: 18, color: iconColor),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: isAlert ? KurieColors.tertiary : KurieColors.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: KurieColors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  if (amount != null)
+                    Text(
+                      amount,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: KurieColors.onSurface,
+                        fontFeatures: [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  Text(
+                    date,
+                    style: const TextStyle(fontSize: 11, color: KurieColors.outline),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }

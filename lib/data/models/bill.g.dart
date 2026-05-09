@@ -18,30 +18,39 @@ class BillAdapter extends TypeAdapter<Bill> {
     };
     return Bill(
       id: fields[0] as String,
-      month: fields[1] as String,
-      amount: (fields[2] as num).toDouble(),
-      kwh: (fields[3] as num).toDouble(),
-      status: fields[4] as String,
-      timestamp: fields[5] as DateTime,
+      submeterId: fields[1] as String,
+      month: fields[2] as String,
+      amount: (fields[3] as num).toDouble(),
+      kwh: (fields[4] as num).toDouble(),
+      status: fields[5] as String,
+      timestamp: fields[6] as DateTime,
+      previousReading: (fields[7] as num?)?.toDouble(),
+      currentReading: (fields[8] as num?)?.toDouble(),
     );
   }
 
   @override
   void write(BinaryWriter writer, Bill obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.month)
+      ..write(obj.submeterId)
       ..writeByte(2)
-      ..write(obj.amount)
+      ..write(obj.month)
       ..writeByte(3)
-      ..write(obj.kwh)
+      ..write(obj.amount)
       ..writeByte(4)
-      ..write(obj.status)
+      ..write(obj.kwh)
       ..writeByte(5)
-      ..write(obj.timestamp);
+      ..write(obj.status)
+      ..writeByte(6)
+      ..write(obj.timestamp)
+      ..writeByte(7)
+      ..write(obj.previousReading)
+      ..writeByte(8)
+      ..write(obj.currentReading);
   }
 
   @override

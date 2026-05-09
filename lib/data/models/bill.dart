@@ -8,26 +8,38 @@ class Bill extends HiveObject {
   final String id;
 
   @HiveField(1)
-  final String month;
+  final String submeterId;
 
   @HiveField(2)
-  final double amount;
+  final String month;
 
   @HiveField(3)
-  final double kwh;
+  final double amount;
 
   @HiveField(4)
-  final String status;
+  final double kwh;
 
   @HiveField(5)
+  final String status;
+
+  @HiveField(6)
   final DateTime timestamp;
+
+  @HiveField(7)
+  final double? previousReading;
+
+  @HiveField(8)
+  final double? currentReading;
 
   Bill({
     required this.id,
+    required this.submeterId,
     required this.month,
     required this.amount,
     required this.kwh,
     required this.status,
     required this.timestamp,
+    this.previousReading,
+    this.currentReading,
   });
 }
