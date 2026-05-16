@@ -123,11 +123,12 @@ class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            meter.name,
-                            style: const TextStyle(
+                            meter.unit,
+                            style: TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                           Container(

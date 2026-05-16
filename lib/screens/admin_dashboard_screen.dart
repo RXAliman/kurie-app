@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:intl/intl.dart';
+import '../data/models/bill.dart';
 import '../data/repositories/app_repository.dart';
 import '../data/services/pdf_service.dart';
 import 'package:printing/printing.dart';
@@ -20,6 +22,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final submeters = context.watch<AppRepository>().submeters;
     final readings = context.watch<AppRepository>().readings;
+    final bills = context.watch<AppRepository>().bills;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
@@ -77,7 +80,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           const SizedBox(height: 24),
 
           // Total Sub-user Contributions card
-          _buildContributionsCard(context, colorScheme),
+          _buildContributionsCard(context, colorScheme, bills),
           const SizedBox(height: 16),
 
           // Trend Alert
@@ -123,7 +126,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               padding: const EdgeInsets.only(bottom: 8),
               child: _buildSubmeterCard(
                 colorScheme: colorScheme,
-                name: meter.name,
+                name: meter.unit,
                 currentReading: '${meter.lastReading} kWh',
                 usage: '${usage.toStringAsFixed(1)} kWh',
                 amount: '₱${amount.toStringAsFixed(2)}',
@@ -152,6 +155,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ),
               ),
             ),
+          const SizedBox(height: 24),
+
+          // Billing Configuration Card
+          _buildBillingConfigCard(context, colorScheme),
           const SizedBox(height: 24),
 
           // Quick Actions
@@ -194,11 +201,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   onTap: () async {
                     final appRepo = context.read<AppRepository>();
                     if (appRepo.bills.isEmpty) {
+                      String message = 'No bills available to generate summary.';
+                      if (appRepo.readings.isNotEmpty) {
+                        message += ' Need at least two readings per meter to calculate usage.';
+                      } else {
+                        message += ' Log some readings first.';
+                      }
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: const Text(
-                            'No bills available to generate summary. Log some readings first.',
-                          ),
+                          content: Text(message),
                           backgroundColor: colorScheme.tertiary,
                         ),
                       );
@@ -240,7 +251,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildContributionsCard(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildContributionsCard(BuildContext context, ColorScheme colorScheme, List<Bill> bills) {
+    final totalAmount = bills.fold<double>(0, (sum, bill) => sum + bill.amount);
+    final currencyFormat = NumberFormat.currency(symbol: '₱', decimalDigits: 2);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -274,7 +288,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            '₱0.00',
+            currencyFormat.format(totalAmount),
             style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 40,
@@ -287,7 +301,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Your remaining master balance: ₱0.00',
+            'Total pending from ${bills.where((b) => b.status == 'Pending').length} active bills',
             style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 14,
@@ -463,6 +477,124 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBillingConfigCard(BuildContext context, ColorScheme colorScheme) {
+    final appRepo = context.watch<AppRepository>();
+    final currencyFormat = NumberFormat.currency(symbol: '₱', decimalDigits: 2);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: colorScheme.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.settings_suggest_rounded, size: 18, color: colorScheme.primary),
+                  const SizedBox(width: 8),
+                  Text(
+                    'BILLING CONFIGURATION',
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.0,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+              TextButton.icon(
+                onPressed: () => Navigator.of(context).pushNamed('/billing_config'),
+                icon: const Icon(Icons.edit_outlined, size: 16),
+                label: const Text('Edit'),
+                style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _billingStat(
+                  colorScheme,
+                  appRepo.useProRata ? 'Monthly Bill' : 'Rate Method',
+                  appRepo.useProRata ? currencyFormat.format(appRepo.totalBill) : 'Constant Rate',
+                ),
+              ),
+              Expanded(
+                child: _billingStat(
+                  colorScheme,
+                  'Active Rate',
+                  '₱${appRepo.currentRate.toStringAsFixed(2)}/kWh',
+                  isHighlight: true,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const Divider(height: 1, thickness: 0.5),
+          const SizedBox(height: 16),
+          Text(
+            'BILLING METHOD DETAILS',
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+              color: colorScheme.outline,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            appRepo.useProRata 
+              ? 'Based on pro-rata distribution of the total master bill among all active submeters.' 
+              : 'Flat rate applied consistently to all submeter consumption.',
+            style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _billingStat(ColorScheme colorScheme, String label, String value, {bool isHighlight = false}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 10,
+            fontWeight: FontWeight.w500,
+            letterSpacing: 0.8,
+            color: colorScheme.outline,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: isHighlight ? colorScheme.primary : colorScheme.onSurface,
           ),
         ),
       ],

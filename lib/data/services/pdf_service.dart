@@ -58,8 +58,7 @@ class PdfService {
                           pw.Text('BILL TO', style: pw.TextStyle(font: boldFont, fontSize: 10, color: PdfColors.grey700)),
                           pw.SizedBox(height: 4),
                           pw.Text(meter.tenantId, style: pw.TextStyle(font: boldFont, fontSize: 14)),
-                          pw.Text(meter.name, style: pw.TextStyle(font: font, fontSize: 12)),
-                          pw.Text(meter.unit, style: pw.TextStyle(font: font, fontSize: 12, color: PdfColors.grey700)),
+                          pw.Text(meter.unit, style: pw.TextStyle(font: boldFont, fontSize: 14)),
                         ],
                       ),
                     ),
@@ -191,7 +190,7 @@ class PdfService {
               meter = meters.firstWhere((m) => m.id == bill.submeterId);
             } catch (_) {
               // If meter not found, create a dummy one for the slip
-              meter = Submeter(id: bill.submeterId, name: 'Unknown', unit: 'N/A', tenantId: 'Unknown', lastReading: '0', status: 'Inactive');
+              meter = Submeter(id: bill.submeterId, unit: 'Unknown Unit', tenantId: 'Unknown', lastReading: '0', status: 'Inactive');
             }
             slips.add(_buildSlip(bill, meter, font, boldFont));
           }
@@ -232,7 +231,7 @@ class PdfService {
           pw.Divider(color: PdfColors.grey300, thickness: 0.5),
           pw.SizedBox(height: 12),
           pw.Text('TENANT: ${meter.tenantId}', style: pw.TextStyle(font: boldFont, fontSize: 12)),
-          pw.Text('UNIT: ${meter.name}', style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey700)),
+          pw.Text('UNIT: ${meter.unit}', style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey700)),
           pw.Spacer(),
           pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,

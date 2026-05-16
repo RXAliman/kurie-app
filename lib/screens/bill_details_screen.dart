@@ -90,8 +90,7 @@ class BillDetailsScreen extends StatelessWidget {
             // Details Section
             _buildDetailSection(colorScheme, 'TENANT INFORMATION', [
               _buildDetailRow(colorScheme, 'Name', meter.tenantId),
-              _buildDetailRow(colorScheme, 'Submeter', meter.name),
-              _buildDetailRow(colorScheme, 'Location', meter.unit),
+              _buildDetailRow(colorScheme, 'Unit/Location', meter.unit),
             ]),
             const SizedBox(height: 32),
 

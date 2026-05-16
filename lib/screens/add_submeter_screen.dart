@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../app/theme/kurie_colors.dart';
 import '../data/models/submeter.dart';
 import '../data/models/reading.dart';
 import '../data/repositories/app_repository.dart';
@@ -16,23 +16,21 @@ class AddSubmeterScreen extends StatefulWidget {
 
 class _AddSubmeterScreenState extends State<AddSubmeterScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
   final _readingController = TextEditingController();
   final _locationController = TextEditingController();
-  String? _selectedTenant;
+  final _tenantController = TextEditingController();
 
   @override
   void dispose() {
-    _nameController.dispose();
     _readingController.dispose();
     _locationController.dispose();
+    _tenantController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: KurieColors.surface,
       appBar: AppBar(
         title: const Text('Add New Submeter'),
         leading: IconButton(
@@ -47,40 +45,44 @@ class _AddSubmeterScreenState extends State<AddSubmeterScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _sectionLabel('UNIT INFORMATION'),
-              const SizedBox(height: 8),
               _textField(
-                label: 'Submeter Name',
-                hint: 'e.g., Unit 12C',
-                controller: _nameController,
-                icon: Icons.drive_file_rename_outline_rounded,
+                context: context,
+                label: 'Assign Tenant',
+                hint: 'Tenant Name',
+                controller: _tenantController,
+                icon: Icons.person_outline_rounded,
+                inputFormatters: [
+                  TextInputFormatter.withFunction((oldValue, newValue) {
+                    return newValue.copyWith(text: newValue.text.toUpperCase());
+                  }),
+                ],
+                validator: (v) =>
+                    v == null || v.isEmpty ? 'Tenant name is required' : null,
               ),
               const SizedBox(height: 20),
               _textField(
+                context: context,
+                label: 'Property Location / Unit',
+                hint: 'e.g., North Wing, Floor 2 / Unit 12C (Optional)',
+                controller: _locationController,
+                icon: Icons.location_on_outlined,
+              ),
+              const SizedBox(height: 20),
+              _textField(
+                context: context,
                 label: 'Initial Reading (kWh)',
                 hint: '0.00',
                 controller: _readingController,
-                keyboardType: TextInputType.number,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 icon: Icons.speed_rounded,
-              ),
-              const SizedBox(height: 32),
-              _sectionLabel('TENANT ASSIGNMENT'),
-              const SizedBox(height: 8),
-              _dropdownField(
-                label: 'Assign Tenant',
-                hint: 'Select an existing tenant',
-                items: ['Unassigned'],
-                value: _selectedTenant,
-                onChanged: (v) => setState(() => _selectedTenant = v),
-              ),
-              const SizedBox(height: 32),
-              _sectionLabel('LOCATION DETAILS'),
-              const SizedBox(height: 8),
-              _textField(
-                label: 'Property Location',
-                hint: 'e.g., North Wing, Floor 2',
-                controller: _locationController,
-                icon: Icons.location_on_outlined,
+                validator: (v) {
+                  if (v != null && v.isNotEmpty && double.tryParse(v) == null) {
+                    return 'Enter a valid number';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 48),
               SizedBox(
@@ -93,28 +95,31 @@ class _AddSubmeterScreenState extends State<AddSubmeterScreen> {
                       final messenger = ScaffoldMessenger.of(context);
                       final appRepo = context.read<AppRepository>();
 
+                      final tenant = _tenantController.text.trim();
+                      final finalTenant = tenant.isEmpty
+                          ? 'Unassigned'
+                          : tenant;
+
+                      final location = _locationController.text.trim();
+                      final initialReading = double.tryParse(_readingController.text) ?? 0.0;
+
                       final newSubmeter = Submeter(
                         id: DateTime.now().millisecondsSinceEpoch.toString(),
-                        name: _nameController.text,
-                        unit: _locationController.text,
-                        tenantId: _selectedTenant ?? 'Unassigned',
-                        lastReading: _readingController.text,
+                        unit: location.isEmpty ? 'N/A' : location,
+                        tenantId: finalTenant,
+                        lastReading: initialReading.toStringAsFixed(2),
                         status: 'Active',
                       );
 
+                      // Also create initial reading entry
+                      final initialReadingEntry = Reading(
+                        id: 'initial_${newSubmeter.id}',
+                        submeterId: newSubmeter.id,
+                        value: initialReading,
+                        timestamp: DateTime.now(),
+                      );
                       await appRepo.addSubmeter(newSubmeter);
-
-                      // Also create an initial reading record if provided
-                      if (_readingController.text.isNotEmpty) {
-                        final initialValue = double.tryParse(_readingController.text) ?? 0.0;
-                        final initialReading = Reading(
-                          id: 'init_${newSubmeter.id}',
-                          submeterId: newSubmeter.id,
-                          timestamp: DateTime.now(),
-                          value: initialValue,
-                        );
-                        await appRepo.addReading(initialReading);
-                      }
+                      await appRepo.addReading(initialReadingEntry);
 
                       navigator.pop();
                       messenger.showSnackBar(
@@ -124,13 +129,6 @@ class _AddSubmeterScreenState extends State<AddSubmeterScreen> {
                       );
                     }
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: KurieColors.primary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
                   child: const Text(
                     'Save Submeter',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -144,91 +142,38 @@ class _AddSubmeterScreenState extends State<AddSubmeterScreen> {
     );
   }
 
-  Widget _sectionLabel(String label) {
-    return Text(
-      label,
-      style: const TextStyle(
-        fontFamily: 'Inter',
-        fontSize: 12,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 1.0,
-        color: KurieColors.onSurfaceVariant,
-      ),
-    );
-  }
-
   Widget _textField({
+    required BuildContext context,
     required String label,
     required String hint,
     required TextEditingController controller,
     IconData? icon,
     TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+    String? Function(String?)? validator,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: colorScheme.onSurface,
+          ),
         ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
+          validator: validator,
+          style: TextStyle(color: colorScheme.onSurface),
           decoration: InputDecoration(
             hintText: hint,
             prefixIcon: icon != null ? Icon(icon, size: 20) : null,
-            fillColor: KurieColors.surfaceContainerLowest,
-            filled: true,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4),
-              borderSide: const BorderSide(color: KurieColors.outlineVariant),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4),
-              borderSide: const BorderSide(color: KurieColors.outlineVariant),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _dropdownField({
-    required String label,
-    required String hint,
-    required List<String> items,
-    String? value,
-    required ValueChanged<String?> onChanged,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: KurieColors.surfaceContainerLowest,
-            border: Border.all(
-              color: KurieColors.outlineVariant,
-              style: BorderStyle.solid,
-            ),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              isExpanded: true,
-              hint: Text(hint),
-              value: value,
-              items: items
-                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                  .toList(),
-              onChanged: onChanged,
-            ),
           ),
         ),
       ],

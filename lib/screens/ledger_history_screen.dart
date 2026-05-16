@@ -106,7 +106,7 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
                   icon: Icons.electric_meter_rounded,
                   iconColor: colorScheme.onSurfaceVariant,
                   title: 'Meter Reading',
-                  subtitle: '${meter?.name ?? 'Unknown Meter'} — ${item.value} kWh',
+                  subtitle: '${meter?.unit ?? 'Unknown Meter'} — ${item.value} kWh',
                   amount: null,
                   date: '${item.timestamp.day}/${item.timestamp.month}',
                 );
@@ -122,7 +122,7 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
                   icon: Icons.receipt_long_rounded,
                   iconColor: colorScheme.primary,
                   title: 'Monthly Bill',
-                  subtitle: '${meter?.name ?? 'Unknown'} — ${bill.month}',
+                  subtitle: '${meter?.unit ?? 'Unknown'} — ${bill.month}',
                   amount: 'P${bill.amount.toStringAsFixed(2)}',
                   date: '${bill.timestamp.day}/${bill.timestamp.month}',
                   onTap: () => Navigator.of(context).pushNamed('/bill_details', arguments: bill.id),

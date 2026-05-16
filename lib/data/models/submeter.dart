@@ -7,9 +7,6 @@ class Submeter extends HiveObject {
   @HiveField(0)
   final String id;
 
-  @HiveField(1)
-  final String name;
-
   @HiveField(2)
   final String unit;
 
@@ -24,7 +21,6 @@ class Submeter extends HiveObject {
 
   Submeter({
     required this.id,
-    required this.name,
     required this.unit,
     required this.tenantId,
     required this.lastReading,

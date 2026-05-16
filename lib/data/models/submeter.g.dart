@@ -18,7 +18,6 @@ class SubmeterAdapter extends TypeAdapter<Submeter> {
     };
     return Submeter(
       id: fields[0] as String,
-      name: fields[1] as String,
       unit: fields[2] as String,
       tenantId: fields[3] as String,
       lastReading: fields[4] as String,
@@ -29,11 +28,9 @@ class SubmeterAdapter extends TypeAdapter<Submeter> {
   @override
   void write(BinaryWriter writer, Submeter obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.id)
-      ..writeByte(1)
-      ..write(obj.name)
       ..writeByte(2)
       ..write(obj.unit)
       ..writeByte(3)

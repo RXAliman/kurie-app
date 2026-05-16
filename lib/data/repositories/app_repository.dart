@@ -15,6 +15,14 @@ class AppRepository extends ChangeNotifier {
   List<Reading> _readings = [];
   List<Dispute> _disputes = [];
   List<Bill> _bills = [];
+  
+  // Billing Configuration
+  double _totalBill = 4500;
+  double _masterUsage = 390;
+  double _baseFee = 300;
+  bool _splitBaseFeeEqually = true;
+  bool _useProRata = true;
+  double _flatRate = 12.0;
 
   ThemeMode _themeMode = ThemeMode.system;
 
@@ -24,6 +32,19 @@ class AppRepository extends ChangeNotifier {
   List<Dispute> get disputes => _disputes;
   List<Bill> get bills => _bills;
   ThemeMode get themeMode => _themeMode;
+  
+  double get totalBill => _totalBill;
+  double get masterUsage => _masterUsage;
+  double get baseFee => _baseFee;
+  bool get splitBaseFeeEqually => _splitBaseFeeEqually;
+  bool get useProRata => _useProRata;
+  double get flatRate => _flatRate;
+  
+  double get currentRate {
+    if (!_useProRata) return _flatRate;
+    if (_masterUsage == 0) return 12.0;
+    return (_totalBill - (_splitBaseFeeEqually ? 0 : _baseFee)) / _masterUsage;
+  }
 
   Future<void> init() async {
     await _db.init();
@@ -36,6 +57,13 @@ class AppRepository extends ChangeNotifier {
     _readings = _db.getAllReadings();
     _disputes = _db.getAllDisputes();
     _bills = _db.getAllBills();
+
+    _totalBill = _db.settingsBox.get('totalBill', defaultValue: 4500.0);
+    _masterUsage = _db.settingsBox.get('masterUsage', defaultValue: 390.0);
+    _baseFee = _db.settingsBox.get('baseFee', defaultValue: 300.0);
+    _splitBaseFeeEqually = _db.settingsBox.get('splitBaseFeeEqually', defaultValue: true);
+    _useProRata = _db.settingsBox.get('useProRata', defaultValue: true);
+    _flatRate = _db.settingsBox.get('flatRate', defaultValue: 12.0);
 
     final themeStr = _db.settingsBox.get('theme', defaultValue: 'System');
     _themeMode = _parseThemeMode(themeStr);
@@ -87,7 +115,7 @@ class AppRepository extends ChangeNotifier {
           id: 'BILL-${DateTime.now().millisecondsSinceEpoch}',
           submeterId: reading.submeterId,
           month: DateFormat('MMMM yyyy').format(reading.timestamp),
-          amount: usage * 12.0, // Default rate
+          amount: usage * currentRate,
           kwh: usage,
           status: 'Pending',
           timestamp: DateTime.now(),
@@ -104,7 +132,6 @@ class AppRepository extends ChangeNotifier {
       final submeter = _submeters[submeterIndex];
       final updatedSubmeter = Submeter(
         id: submeter.id,
-        name: submeter.name,
         unit: submeter.unit,
         tenantId: submeter.tenantId,
         lastReading: reading.value.toStringAsFixed(2),
@@ -139,6 +166,41 @@ class AppRepository extends ChangeNotifier {
   Future<void> clearAllData() async {
     await _db.clearAllData();
     _loadData();
+  }
+
+  Future<void> updateBillingConfig({
+    double? totalBill,
+    double? masterUsage,
+    double? baseFee,
+    bool? splitBaseFeeEqually,
+    bool? useProRata,
+    double? flatRate,
+  }) async {
+    if (totalBill != null) {
+      _totalBill = totalBill;
+      await _db.settingsBox.put('totalBill', totalBill);
+    }
+    if (masterUsage != null) {
+      _masterUsage = masterUsage;
+      await _db.settingsBox.put('masterUsage', masterUsage);
+    }
+    if (baseFee != null) {
+      _baseFee = baseFee;
+      await _db.settingsBox.put('baseFee', baseFee);
+    }
+    if (splitBaseFeeEqually != null) {
+      _splitBaseFeeEqually = splitBaseFeeEqually;
+      await _db.settingsBox.put('splitBaseFeeEqually', splitBaseFeeEqually);
+    }
+    if (useProRata != null) {
+      _useProRata = useProRata;
+      await _db.settingsBox.put('useProRata', useProRata);
+    }
+    if (flatRate != null) {
+      _flatRate = flatRate;
+      await _db.settingsBox.put('flatRate', flatRate);
+    }
+    notifyListeners();
   }
 
   // Refresh data explicitly if needed

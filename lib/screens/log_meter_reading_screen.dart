@@ -90,7 +90,7 @@ class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
                   hint: Text('Select submeter', style: TextStyle(color: colorScheme.outline)),
                   isExpanded: true,
                   items: submeters
-                      .map((s) => DropdownMenuItem(value: s.id, child: Text(s.name, style: TextStyle(color: colorScheme.onSurface))))
+                      .map((s) => DropdownMenuItem(value: s.id, child: Text(s.unit, style: TextStyle(color: colorScheme.onSurface))))
                       .toList(),
                   onChanged: (v) => setState(() => _selectedSubmeterId = v),
                 ),
@@ -152,9 +152,22 @@ class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
               width: double.infinity, height: 48,
               child: ElevatedButton(
                 onPressed: () async {
+                  final newValue = double.tryParse(_readingController.text) ?? 0.0;
+                  final lastReadingValue = double.tryParse(selectedSubmeter?.lastReading ?? '0') ?? 0.0;
+
                   if (_selectedSubmeterId == null || _readingController.text.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Please select a submeter and enter a reading')),
+                    );
+                    return;
+                  }
+
+                  if (newValue <= lastReadingValue) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('New reading must be greater than the last reading ($lastReadingValue kWh)'),
+                        backgroundColor: colorScheme.error,
+                      ),
                     );
                     return;
                   }
@@ -163,7 +176,6 @@ class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
                   final messenger = ScaffoldMessenger.of(context);
                   final appRepo = context.read<AppRepository>();
 
-                  final newValue = double.tryParse(_readingController.text) ?? 0.0;
                   final newReading = Reading(
                     id: DateTime.now().millisecondsSinceEpoch.toString(),
                     submeterId: _selectedSubmeterId!,
