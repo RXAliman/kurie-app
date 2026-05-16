@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../app/theme/kurie_colors.dart';
 import '../data/models/notification_item.dart';
 import '../data/repositories/app_repository.dart';
 
@@ -50,12 +49,13 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final notifications = context.watch<AppRepository>().notifications;
 
     return Scaffold(
-      backgroundColor: KurieColors.surface,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: KurieColors.surface,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(
@@ -64,7 +64,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
             fontFamily: 'Inter',
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: KurieColors.onSurface,
+            color: colorScheme.onSurface,
           ),
         ),
         actions: [
@@ -76,7 +76,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
                 fontFamily: 'Inter',
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: KurieColors.primary,
+                color: colorScheme.primary,
               ),
             ),
           ),
@@ -87,7 +87,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 20),
             decoration: BoxDecoration(
-              color: KurieColors.surfaceContainerHigh,
+              color: colorScheme.surfaceContainerHigh,
               borderRadius: BorderRadius.circular(4),
             ),
             child: TabBar(
@@ -95,12 +95,12 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
               indicatorSize: TabBarIndicatorSize.tab,
               dividerColor: Colors.transparent,
               indicator: BoxDecoration(
-                color: KurieColors.surfaceContainerLowest,
+                color: colorScheme.surfaceContainerLowest,
                 borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: KurieColors.outlineVariant),
+                border: Border.all(color: colorScheme.outlineVariant),
               ),
-              labelColor: KurieColors.onSurface,
-              unselectedLabelColor: KurieColors.onSurfaceVariant,
+              labelColor: colorScheme.onSurface,
+              unselectedLabelColor: colorScheme.onSurfaceVariant,
               labelStyle: const TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 14,
@@ -158,15 +158,16 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
   }
 
   Widget _buildNotificationCard(NotificationItem item) {
+    final colorScheme = Theme.of(context).colorScheme;
     final bool isUrgent = item.isUrgent;
     final bool isRead = item.isRead;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: KurieColors.surfaceContainerLowest,
+        color: colorScheme.surfaceContainerLowest,
         border: Border.all(
-          color: isUrgent ? KurieColors.tertiary.withAlpha(76) : KurieColors.outlineVariant,
+          color: isUrgent ? colorScheme.tertiary.withAlpha(76) : colorScheme.outlineVariant,
         ),
         borderRadius: BorderRadius.circular(4),
       ),
@@ -178,14 +179,14 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: isUrgent 
-                  ? KurieColors.tertiaryContainer.withAlpha(51) 
-                  : KurieColors.surfaceContainerHigh,
+                  ? colorScheme.tertiaryContainer.withAlpha(51) 
+                  : colorScheme.surfaceContainerHigh,
               borderRadius: BorderRadius.circular(4),
             ),
             child: Icon(
               _getIconForType(item.type),
               size: 20,
-              color: isUrgent ? KurieColors.tertiary : KurieColors.primary,
+              color: isUrgent ? colorScheme.tertiary : colorScheme.primary,
             ),
           ),
           const SizedBox(width: 16),
@@ -204,7 +205,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
                           fontFamily: 'Inter',
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: isUrgent ? KurieColors.tertiary : KurieColors.onSurface,
+                          color: isUrgent ? colorScheme.tertiary : colorScheme.onSurface,
                         ),
                       ),
                     ),
@@ -212,9 +213,9 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
                       Container(
                         width: 8,
                         height: 8,
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: KurieColors.neonBlue,
+                          color: colorScheme.primary,
                         ),
                       ),
                   ],
@@ -227,7 +228,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
                     height: 1.4,
-                    color: KurieColors.onSurfaceVariant,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -237,7 +238,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
                     fontFamily: 'Inter',
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: KurieColors.outline,
+                    color: colorScheme.outline,
                   ),
                 ),
               ],
@@ -249,6 +250,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
   }
 
   Widget _buildEmptyState() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -258,7 +260,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
             Icon(
               Icons.notifications_none_rounded,
               size: 80,
-              color: KurieColors.outlineVariant,
+              color: colorScheme.outlineVariant,
             ),
             const SizedBox(height: 24),
             Text(
@@ -268,7 +270,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
                 fontFamily: 'Inter',
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: KurieColors.onSurface,
+                color: colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 8),
@@ -280,14 +282,14 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
                 height: 1.5,
-                color: KurieColors.onSurfaceVariant,
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 32),
             OutlinedButton(
               onPressed: () => Navigator.of(context).pushNamed('/ledger_history'),
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: KurieColors.outlineVariant),
+                side: BorderSide(color: colorScheme.outlineVariant),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
@@ -297,7 +299,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> wit
                   fontFamily: 'Inter',
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: KurieColors.onSurface,
+                  color: colorScheme.onSurface,
                 ),
               ),
             ),

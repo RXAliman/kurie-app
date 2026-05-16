@@ -45,6 +45,8 @@ dependencies:
   firebase_auth: ^6.5.0
   google_sign_in: 6.2.1
   package_info_plus: ^8.1.1
+  flutter_local_notifications: ^20.1.0
+  timezone: ^0.10.1
 
 dev_dependencies:
   flutter_test:

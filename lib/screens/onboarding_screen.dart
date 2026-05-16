@@ -33,7 +33,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       icon: Icons.notifications_active_rounded,
       accentIcon: Icons.bolt_outlined,
       title: 'Real-time\nAlerts',
-      subtitle: 'Get reminded as soon as the new billing cycle starts.',
+      subtitle: 'Get reminded when it\'s time to take a new reading.',
     ),
   ];
 

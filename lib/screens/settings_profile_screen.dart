@@ -16,8 +16,9 @@ class SettingsProfileScreen extends StatefulWidget {
 }
 
 class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
-  bool _billingAlerts = true;
-  bool _readingReminders = true;
+  late bool _readingReminders;
+  late String _reminderFrequency;
+  late int _reminderDay;
   String _selectedTheme = 'Light';
 
   final User? _user = FirebaseAuth.instance.currentUser;
@@ -26,6 +27,10 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
   @override
   void initState() {
     super.initState();
+    final repo = context.read<AppRepository>();
+    _readingReminders = repo.readingRemindersEnabled;
+    _reminderFrequency = repo.reminderFrequency;
+    _reminderDay = repo.reminderDay;
     _loadAppVersion();
   }
 
@@ -169,19 +174,50 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
             _configGroup(
               children: [
                 _toggleRow(
-                  'Billing Alerts',
-                  _billingAlerts,
-                  (v) => setState(() => _billingAlerts = v),
-                ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8),
-                  child: Divider(height: 1),
-                ),
-                _toggleRow(
                   'Reading Reminders',
                   _readingReminders,
-                  (v) => setState(() => _readingReminders = v),
+                  (v) {
+                    setState(() => _readingReminders = v);
+                    context
+                        .read<AppRepository>()
+                        .updateReminderSettings(enabled: v);
+                  },
                 ),
+                if (_readingReminders) ...[
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Divider(height: 1),
+                  ),
+                  _dropdownRow(
+                    'Frequency',
+                    _reminderFrequency,
+                    ['Monthly', 'Weekly', 'Daily'],
+                    (v) {
+                      setState(() => _reminderFrequency = v!);
+                      context
+                          .read<AppRepository>()
+                          .updateReminderSettings(frequency: v);
+                    },
+                  ),
+                  if (_reminderFrequency == 'Monthly') ...[
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Divider(height: 1),
+                    ),
+                    _dropdownRow(
+                      'Preferred Day',
+                      _reminderDay.toString(),
+                      List.generate(31, (i) => (i + 1).toString()),
+                      (v) {
+                        final day = int.parse(v!);
+                        setState(() => _reminderDay = day);
+                        context
+                            .read<AppRepository>()
+                            .updateReminderSettings(day: day);
+                      },
+                    ),
+                  ],
+                ],
               ],
             ),
             const SizedBox(height: 24),
@@ -379,6 +415,44 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
           onChanged: onChanged,
           activeTrackColor: Theme.of(context).colorScheme.primary.withAlpha(150),
           activeThumbColor: Theme.of(context).colorScheme.primary,
+        ),
+      ],
+    );
+  }
+
+  Widget _dropdownRow(
+    String label,
+    String value,
+    List<String> options,
+    ValueChanged<String?> onChanged,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        ),
+        DropdownButton<String>(
+          value: value,
+          underline: const SizedBox(),
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: colorScheme.primary,
+          ),
+          icon: Icon(
+            Icons.keyboard_arrow_down_rounded,
+            size: 20,
+            color: colorScheme.primary,
+          ),
+          items: options
+              .map(
+                (t) => DropdownMenuItem(value: t, child: Text(t)),
+              )
+              .toList(),
+          onChanged: onChanged,
         ),
       ],
     );

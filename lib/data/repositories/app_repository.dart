@@ -6,6 +6,7 @@ import '../models/notification_item.dart';
 import '../services/database_service.dart';
 import '../models/dispute.dart';
 import '../models/bill.dart';
+import '../services/notification_service.dart';
 
 class AppRepository extends ChangeNotifier {
   final DatabaseService _db = DatabaseService();
@@ -15,7 +16,7 @@ class AppRepository extends ChangeNotifier {
   List<Reading> _readings = [];
   List<Dispute> _disputes = [];
   List<Bill> _bills = [];
-  
+
   // Billing Configuration
   double _totalBill = 4500;
   double _masterUsage = 390;
@@ -23,6 +24,10 @@ class AppRepository extends ChangeNotifier {
   bool _splitBaseFeeEqually = true;
   bool _useProRata = true;
   double _flatRate = 12.0;
+
+  bool _readingRemindersEnabled = true;
+  String _reminderFrequency = 'Monthly';
+  int _reminderDay = 1;
 
   ThemeMode _themeMode = ThemeMode.system;
 
@@ -32,14 +37,17 @@ class AppRepository extends ChangeNotifier {
   List<Dispute> get disputes => _disputes;
   List<Bill> get bills => _bills;
   ThemeMode get themeMode => _themeMode;
-  
+
   double get totalBill => _totalBill;
   double get masterUsage => _masterUsage;
   double get baseFee => _baseFee;
   bool get splitBaseFeeEqually => _splitBaseFeeEqually;
   bool get useProRata => _useProRata;
   double get flatRate => _flatRate;
-  
+  bool get readingRemindersEnabled => _readingRemindersEnabled;
+  String get reminderFrequency => _reminderFrequency;
+  int get reminderDay => _reminderDay;
+
   double get currentRate {
     if (!_useProRata) return _flatRate;
     if (_masterUsage == 0) return 12.0;
@@ -61,9 +69,21 @@ class AppRepository extends ChangeNotifier {
     _totalBill = _db.settingsBox.get('totalBill', defaultValue: 4500.0);
     _masterUsage = _db.settingsBox.get('masterUsage', defaultValue: 390.0);
     _baseFee = _db.settingsBox.get('baseFee', defaultValue: 300.0);
-    _splitBaseFeeEqually = _db.settingsBox.get('splitBaseFeeEqually', defaultValue: true);
+    _splitBaseFeeEqually = _db.settingsBox.get(
+      'splitBaseFeeEqually',
+      defaultValue: true,
+    );
     _useProRata = _db.settingsBox.get('useProRata', defaultValue: true);
     _flatRate = _db.settingsBox.get('flatRate', defaultValue: 12.0);
+    _readingRemindersEnabled = _db.settingsBox.get(
+      'readingRemindersEnabled',
+      defaultValue: true,
+    );
+    _reminderFrequency = _db.settingsBox.get(
+      'reminderFrequency',
+      defaultValue: 'Monthly',
+    );
+    _reminderDay = _db.settingsBox.get('reminderDay', defaultValue: 1);
 
     final themeStr = _db.settingsBox.get('theme', defaultValue: 'System');
     _themeMode = _parseThemeMode(themeStr);
@@ -105,16 +125,17 @@ class AppRepository extends ChangeNotifier {
 
   Future<void> addReading(Reading reading) async {
     // Get the previous reading for this submeter before adding the new one
-    final meterReadings = _readings.where((r) => r.submeterId == reading.submeterId).toList()
-      ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
-    
+    final meterReadings =
+        _readings.where((r) => r.submeterId == reading.submeterId).toList()
+          ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+
     await _db.addReading(reading);
-    
+
     // If there was a previous reading, generate a Bill
     if (meterReadings.isNotEmpty) {
       final prev = meterReadings.first;
       final usage = reading.value - prev.value;
-      
+
       if (usage > 0) {
         final bill = Bill(
           id: 'BILL-${DateTime.now().millisecondsSinceEpoch}',
@@ -131,9 +152,11 @@ class AppRepository extends ChangeNotifier {
         await _db.addBill(bill);
       }
     }
-    
+
     // Update the submeter's last reading
-    final submeterIndex = _submeters.indexWhere((s) => s.id == reading.submeterId);
+    final submeterIndex = _submeters.indexWhere(
+      (s) => s.id == reading.submeterId,
+    );
     if (submeterIndex != -1) {
       final submeter = _submeters[submeterIndex];
       final updatedSubmeter = Submeter(
@@ -145,7 +168,7 @@ class AppRepository extends ChangeNotifier {
       );
       await _db.updateSubmeter(updatedSubmeter);
     }
-    
+
     _loadData();
   }
 
@@ -206,6 +229,47 @@ class AppRepository extends ChangeNotifier {
       _flatRate = flatRate;
       await _db.settingsBox.put('flatRate', flatRate);
     }
+    notifyListeners();
+  }
+
+  Future<void> updateReminderSettings({
+    bool? enabled,
+    String? frequency,
+    int? day,
+  }) async {
+    if (enabled != null) {
+      _readingRemindersEnabled = enabled;
+      await _db.settingsBox.put('readingRemindersEnabled', enabled);
+    }
+    if (frequency != null) {
+      _reminderFrequency = frequency;
+      await _db.settingsBox.put('reminderFrequency', frequency);
+    }
+    if (day != null) {
+      _reminderDay = day;
+      await _db.settingsBox.put('reminderDay', day);
+    }
+
+    // Apply notification scheduling
+    await NotificationService().scheduleReadingReminder(
+      enabled: _readingRemindersEnabled,
+      frequency: _reminderFrequency,
+      dayOfMonth: _reminderDay,
+    );
+
+    // Add notification to history
+    await addNotification(
+      NotificationItem(
+        id: 'NOTIF-${DateTime.now().millisecondsSinceEpoch}',
+        title: 'Reading Reminder Configured',
+        description: _readingRemindersEnabled
+            ? 'Reminders are set to $_reminderFrequency${_reminderFrequency == 'Monthly' ? ' on day $_reminderDay' : ''}'
+            : 'Reading reminders have been disabled',
+        type: 'reading',
+        timestamp: DateTime.now(),
+      ),
+    );
+
     notifyListeners();
   }
 
