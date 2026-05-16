@@ -109,6 +109,10 @@ class DatabaseService {
     await billsBox.put(bill.id, bill);
   }
 
+  Future<void> updateBill(Bill bill) async {
+    await billsBox.put(bill.id, bill);
+  }
+
   Future<void> deleteSubmeter(String id) async {
     await submetersBox.delete(id);
     

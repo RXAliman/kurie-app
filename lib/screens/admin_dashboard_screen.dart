@@ -188,6 +188,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     List<Bill> bills,
   ) {
     final totalAmount = bills.fold<double>(0, (sum, bill) => sum + bill.amount);
+    final totalPaid = bills
+        .where((b) => b.status == 'Paid')
+        .fold<double>(0, (sum, bill) => sum + bill.amount);
+    final totalUnpaid = bills
+        .where((b) => b.status == 'Pending')
+        .fold<double>(0, (sum, bill) => sum + bill.amount);
+        
     final currencyFormat = NumberFormat.currency(symbol: '₱', decimalDigits: 2);
 
     return Container(
@@ -204,7 +211,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           Row(
             children: [
               Icon(
-                Icons.electric_meter_rounded,
+                Icons.account_balance_wallet_rounded,
                 size: 18,
                 color: colorScheme.primary,
               ),
@@ -234,18 +241,73 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Total pending from ${bills.where((b) => b.status == 'Pending').length} active bills',
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: colorScheme.onSurfaceVariant,
-            ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _buildContributionStat(
+                colorScheme,
+                'Paid',
+                currencyFormat.format(totalPaid),
+                colorScheme.primary,
+              ),
+              const SizedBox(width: 32),
+              _buildContributionStat(
+                colorScheme,
+                'Unpaid',
+                currencyFormat.format(totalUnpaid),
+                colorScheme.tertiary,
+              ),
+            ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildContributionStat(
+    ColorScheme colorScheme,
+    String label,
+    String value,
+    Color color,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label.toUpperCase(),
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: colorScheme.onSurface,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+      ],
     );
   }
 

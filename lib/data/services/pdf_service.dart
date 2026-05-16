@@ -96,9 +96,9 @@ class PdfService {
                     pw.TableRow(
                       children: [
                         _tableCell('Electricity Consumption', font),
-                        _tableCell('${bill.previousReading ?? 0.0} kWh', font, align: pw.Alignment.centerRight),
-                        _tableCell('${bill.currentReading ?? 0.0} kWh', font, align: pw.Alignment.centerRight),
-                        _tableCell('${bill.kwh} kWh', boldFont, align: pw.Alignment.centerRight),
+                        _tableCell('${(bill.previousReading ?? 0.0).toStringAsFixed(2)} kWh', font, align: pw.Alignment.centerRight),
+                        _tableCell('${(bill.currentReading ?? 0.0).toStringAsFixed(2)} kWh', font, align: pw.Alignment.centerRight),
+                        _tableCell('${bill.kwh.toStringAsFixed(2)} kWh', boldFont, align: pw.Alignment.centerRight),
                       ],
                     ),
                   ],
@@ -117,6 +117,19 @@ class PdfService {
                             pw.Text('Subtotal: ', style: pw.TextStyle(font: font, fontSize: 12)),
                             pw.SizedBox(width: 40),
                             pw.Text(_currencyFormat.format(bill.amount), style: pw.TextStyle(font: font, fontSize: 12)),
+                          ],
+                        ),
+                        pw.SizedBox(height: 8),
+                        pw.SizedBox(
+                          width: 150,
+                          child: pw.Divider(color: PdfColors.grey300, thickness: 0.5),
+                        ),
+                        pw.SizedBox(height: 8),
+                        pw.Row(
+                          children: [
+                            pw.Text('Balance: ', style: pw.TextStyle(font: font, fontSize: 12)),
+                            pw.SizedBox(width: 40),
+                            pw.Text(_currencyFormat.format(bill.balance), style: pw.TextStyle(font: font, fontSize: 12)),
                           ],
                         ),
                         pw.SizedBox(height: 8),
@@ -240,10 +253,11 @@ class PdfService {
               pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  _slipDetail('Prev Reading:', '${bill.previousReading ?? 0} kWh', font),
-                  _slipDetail('Curr Reading:', '${bill.currentReading ?? 0} kWh', font),
+                  _slipDetail('Prev Reading:', '${(bill.previousReading ?? 0).toStringAsFixed(2)} kWh', font),
+                  _slipDetail('Curr Reading:', '${(bill.currentReading ?? 0).toStringAsFixed(2)} kWh', font),
+                  _slipDetail('Balance:', 'P${bill.balance.toStringAsFixed(2)}', font),
                   pw.SizedBox(height: 4),
-                  _slipDetail('Total Usage:', '${bill.kwh} kWh', boldFont, fontSize: 10),
+                  _slipDetail('Total Usage:', '${bill.kwh.toStringAsFixed(2)} kWh', boldFont, fontSize: 10),
                 ],
               ),
               pw.Column(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'admin_dashboard_screen.dart';
 import 'ledger_history_screen.dart';
+import 'bill_history_screen.dart';
 import 'settings_profile_screen.dart';
 
 /// Home shell — bottom navigation for Dashboard, Readings, Billing, Insights.
@@ -19,6 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final _screens = const [
     AdminDashboardScreen(),
     LedgerHistoryScreen(),
+    BillHistoryScreen(),
     SettingsProfileScreen(),
   ];
 
@@ -41,6 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: colorScheme.surfaceContainerLowest,
           selectedItemColor: colorScheme.primary,
           unselectedItemColor: colorScheme.onSurfaceVariant,
+          type: BottomNavigationBarType.fixed,
           currentIndex: _currentIndex,
           onTap: (i) => setState(() => _currentIndex = i),
           items: const [
@@ -49,8 +52,12 @@ class _HomeScreenState extends State<HomeScreen> {
               label: 'Dashboard',
             ),
             BottomNavigationBarItem(
+              icon: Icon(Icons.electric_meter_outlined),
+              label: 'Readings',
+            ),
+            BottomNavigationBarItem(
               icon: Icon(Icons.receipt_long_outlined),
-              label: 'History',
+              label: 'Bills',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person_outline_rounded),

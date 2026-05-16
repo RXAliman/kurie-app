@@ -14,6 +14,7 @@ import 'screens/add_submeter_screen.dart';
 import 'screens/notification_center_screen.dart';
 import 'screens/dispute_resolution_screen.dart';
 import 'screens/bill_details_screen.dart';
+import 'screens/bill_history_screen.dart';
 import 'screens/register_screen.dart';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -66,6 +67,7 @@ class KurieApp extends StatelessWidget {
         '/add_submeter': (context) => const AddSubmeterScreen(),
         '/notifications': (context) => const NotificationCenterScreen(),
         '/dispute_resolution': (context) => const DisputeResolutionScreen(),
+        '/bill_history': (context) => const BillHistoryScreen(),
         '/bill_details': (context) {
           final billId = ModalRoute.of(context)!.settings.arguments as String;
           return BillDetailsScreen(billId: billId);

@@ -134,7 +134,7 @@ class AppRepository extends ChangeNotifier {
     // If there was a previous reading, generate a Bill
     if (meterReadings.isNotEmpty) {
       final prev = meterReadings.first;
-      final usage = reading.value - prev.value;
+      final usage = double.parse((reading.value - prev.value).toStringAsFixed(2));
 
       if (usage > 0) {
         final bill = Bill(
@@ -180,6 +180,27 @@ class AppRepository extends ChangeNotifier {
   Future<void> addBill(Bill bill) async {
     await _db.addBill(bill);
     _loadData();
+  }
+
+  Future<void> markBillAsPaid(String billId) async {
+    final billIndex = _bills.indexWhere((b) => b.id == billId);
+    if (billIndex != -1) {
+      final bill = _bills[billIndex];
+      final updatedBill = Bill(
+        id: bill.id,
+        submeterId: bill.submeterId,
+        month: bill.month,
+        amount: bill.amount,
+        kwh: bill.kwh,
+        status: 'Paid',
+        timestamp: bill.timestamp,
+        previousReading: bill.previousReading,
+        currentReading: bill.currentReading,
+        balance: bill.balance,
+      );
+      await _db.updateBill(updatedBill);
+      _loadData();
+    }
   }
 
   Future<void> markNotificationAsRead(String id) async {

@@ -95,14 +95,15 @@ class BillDetailsScreen extends StatelessWidget {
             const SizedBox(height: 32),
 
             _buildDetailSection(colorScheme, 'CONSUMPTION DETAILS', [
-              _buildDetailRow(colorScheme, 'Previous Reading', '${bill.previousReading ?? 0} kWh'),
-              _buildDetailRow(colorScheme, 'Current Reading', '${bill.currentReading ?? 0} kWh'),
-              _buildDetailRow(colorScheme, 'Total Usage', '${bill.kwh} kWh', isBold: true),
+              _buildDetailRow(colorScheme, 'Previous Reading', '${(bill.previousReading ?? 0).toStringAsFixed(2)} kWh'),
+              _buildDetailRow(colorScheme, 'Current Reading', '${(bill.currentReading ?? 0).toStringAsFixed(2)} kWh'),
+              _buildDetailRow(colorScheme, 'Total Usage', '${bill.kwh.toStringAsFixed(2)} kWh', isBold: true),
             ]),
             const SizedBox(height: 32),
 
             _buildDetailSection(colorScheme, 'PAYMENT SUMMARY', [
               _buildDetailRow(colorScheme, 'Subtotal', currencyFormat.format(bill.amount)),
+              _buildDetailRow(colorScheme, 'Balance', currencyFormat.format(bill.balance)),
               Divider(height: 32, color: colorScheme.outlineVariant),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -117,26 +118,64 @@ class BillDetailsScreen extends StatelessWidget {
             ]),
             const SizedBox(height: 48),
 
-            // Download Button (Primary)
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton.icon(
-                onPressed: () async {
-                  final pdfData = await PdfService.generateIndividualBill(bill, meter);
-                  await Printing.layoutPdf(
-                    onLayout: (format) => pdfData,
-                    name: 'Bill_${bill.id}.pdf',
-                  );
-                },
-                icon: const Icon(Icons.picture_as_pdf_rounded),
-                label: const Text('Download Statement (PDF)', style: TextStyle(fontWeight: FontWeight.w700)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colorScheme.primary,
-                  foregroundColor: colorScheme.onPrimary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+            // Actions
+            Column(
+              children: [
+                if (bill.status != 'Paid') ...[
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: FilledButton.icon(
+                      onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Confirm Payment'),
+                            content: Text('Mark bill ${bill.id} as paid?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: const Text('Confirm'),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirm == true) {
+                          await appRepo.markBillAsPaid(bill.id);
+                        }
+                      },
+                      icon: const Icon(Icons.check_circle_outline_rounded),
+                      label: const Text('Confirm Payment', style: TextStyle(fontWeight: FontWeight.w700)),
+                      style: FilledButton.styleFrom(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      final pdfData = await PdfService.generateIndividualBill(bill, meter);
+                      await Printing.layoutPdf(
+                        onLayout: (format) => pdfData,
+                        name: 'Bill_${bill.id}.pdf',
+                      );
+                    },
+                    icon: const Icon(Icons.picture_as_pdf_rounded),
+                    label: const Text('Download Statement (PDF)', style: TextStyle(fontWeight: FontWeight.w700)),
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ],
         ),

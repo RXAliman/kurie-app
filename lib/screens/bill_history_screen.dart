@@ -3,29 +3,28 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
 import '../data/models/submeter.dart';
-import '../data/models/reading.dart';
-
+import '../data/models/bill.dart';
 import '../data/repositories/app_repository.dart';
 
-/// Ledger History screen — paginated history of readings and bills.
-/// Matches Stitch "Ledger History" screen.
-class LedgerHistoryScreen extends StatefulWidget {
-  const LedgerHistoryScreen({super.key});
+/// Bill History screen — paginated history of finalized bills with status chips.
+class BillHistoryScreen extends StatefulWidget {
+  const BillHistoryScreen({super.key});
 
   @override
-  State<LedgerHistoryScreen> createState() => _LedgerHistoryScreenState();
+  State<BillHistoryScreen> createState() => _BillHistoryScreenState();
 }
 
-class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
+class _BillHistoryScreenState extends State<BillHistoryScreen> {
   int _currentPage = 0;
   static const int _pageSize = 10;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final readings = context.watch<AppRepository>().readings;
+    final bills = context.watch<AppRepository>().bills;
     final submeters = context.watch<AppRepository>().submeters;
-    final List<Reading> items = List.from(readings);
+
+    final List<Bill> items = List.from(bills);
     items.sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
     // Pagination logic
@@ -41,7 +40,7 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Reading History',
+            'Bill History',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w700,
@@ -51,7 +50,7 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Historical record of all logged meter readings.',
+            'Historical record of all generated bills and their payment status.',
             style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: 24),
@@ -67,7 +66,7 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
               ),
               child: Center(
                 child: Text(
-                  'No readings found.',
+                  'No bills found.',
                   style: TextStyle(
                     color: colorScheme.onSurfaceVariant,
                     fontSize: 13,
@@ -76,20 +75,19 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
               ),
             )
           else ...[
-            ...paginatedItems.map((item) {
+            ...paginatedItems.map((bill) {
               final meter = submeters.cast<Submeter?>().firstWhere(
-                (s) => s?.id == item.submeterId,
+                (s) => s?.id == bill.submeterId,
                 orElse: () => null,
               );
 
-              return _ledgerEntry(
+              return _billEntry(
                 colorScheme: colorScheme,
-                icon: Icons.electric_meter_rounded,
-                iconColor: colorScheme.onSurfaceVariant,
-                title: meter?.tenantId ?? 'Unknown Tenant',
-                subtitle: '${item.value.toStringAsFixed(2)} kWh',
-                amount: null,
-                date: DateFormat('MMM dd, yyyy').format(item.timestamp),
+                bill: bill,
+                meter: meter,
+                onTap: () => Navigator.of(
+                  context,
+                ).pushNamed('/bill_details', arguments: bill.id),
               );
             }),
 
@@ -133,17 +131,14 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
     );
   }
 
-  Widget _ledgerEntry({
+  Widget _billEntry({
     required ColorScheme colorScheme,
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
-    String? amount,
-    required String date,
-    bool isAlert = false,
+    required Bill bill,
+    Submeter? meter,
     VoidCallback? onTap,
   }) {
+    final isPaid = bill.status == 'Paid';
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: InkWell(
@@ -152,14 +147,8 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isAlert
-                ? colorScheme.tertiaryContainer.withAlpha(40)
-                : colorScheme.surfaceContainerLowest,
-            border: Border.all(
-              color: isAlert
-                  ? colorScheme.tertiaryContainer.withAlpha(120)
-                  : colorScheme.outlineVariant,
-            ),
+            color: colorScheme.surfaceContainerLowest,
+            border: Border.all(color: colorScheme.outlineVariant),
             borderRadius: BorderRadius.circular(4),
           ),
           child: Row(
@@ -168,29 +157,49 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: iconColor.withAlpha(20),
+                  color: colorScheme.primary.withAlpha(20),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, size: 18, color: iconColor),
+                child: Icon(Icons.receipt_long_rounded, size: 18, color: colorScheme.primary),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: isAlert
-                            ? colorScheme.tertiary
-                            : colorScheme.onSurface,
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          meter?.tenantId ?? 'Unknown',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: isPaid
+                                ? colorScheme.primaryContainer.withAlpha(40)
+                                : colorScheme.tertiaryContainer.withAlpha(40),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            bill.status,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: isPaid ? colorScheme.primary : colorScheme.tertiary,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      subtitle,
+                      bill.month,
                       style: TextStyle(
                         fontSize: 12,
                         color: colorScheme.onSurfaceVariant,
@@ -202,18 +211,17 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  if (amount != null)
-                    Text(
-                      amount,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: colorScheme.onSurface,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
-                    ),
                   Text(
-                    date,
+                    '₱${bill.amount.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: colorScheme.onSurface,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                  Text(
+                    DateFormat('MMM dd, yyyy').format(bill.timestamp),
                     style: TextStyle(fontSize: 11, color: colorScheme.outline),
                   ),
                 ],
