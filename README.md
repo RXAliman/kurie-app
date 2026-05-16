@@ -31,8 +31,8 @@
 
 | Dashboard | Meter Logging | Bill Details |
 | :---: | :---: | :---: |
-| *[Add Screenshot]* | *[Add Screenshot]* | *[Add Screenshot]* |
+| <img width="330" alt="Dashboard Screen" src="https://github.com/user-attachments/assets/4c36f8a7-8b68-46b4-a1e9-74d6bc74e99a" /> | <img width="330" alt="Log Meter Screen" src="https://github.com/user-attachments/assets/86dbb500-6641-4cfb-92cf-2a7a37d07e8b" /> | <img width="330" alt="Bill Details Screen" src="https://github.com/user-attachments/assets/57b02b20-40c0-48c2-9078-890c5c1c2730" /> |
 
 | Submeter Management | Bill History | Settings |
 | :---: | :---: | :---: |
-| *[Add Screenshot]* | *[Add Screenshot]* | *[Add Screenshot]* |
+| <img width="330" alt="Submeter Management Screen" src="https://github.com/user-attachments/assets/3e559b16-ed1d-435a-83c8-f20c242c0dff" /> | <img width="330" alt="Bill History Screen" src="https://github.com/user-attachments/assets/32dd4f88-1278-4096-a85c-71fa9ce6445c" /> | <img width="330" alt="Settings Screen" src="https://github.com/user-attachments/assets/85ea49a0-4cdc-4469-9ee2-9e456684a60c" /> |
