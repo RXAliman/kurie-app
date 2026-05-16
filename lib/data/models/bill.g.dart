@@ -26,13 +26,14 @@ class BillAdapter extends TypeAdapter<Bill> {
       timestamp: fields[6] as DateTime,
       previousReading: (fields[7] as num?)?.toDouble(),
       currentReading: (fields[8] as num?)?.toDouble(),
+      balance: fields[9] == null ? 0.0 : (fields[9] as num).toDouble(),
     );
   }
 
   @override
   void write(BinaryWriter writer, Bill obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -50,7 +51,9 @@ class BillAdapter extends TypeAdapter<Bill> {
       ..writeByte(7)
       ..write(obj.previousReading)
       ..writeByte(8)
-      ..write(obj.currentReading);
+      ..write(obj.currentReading)
+      ..writeByte(9)
+      ..write(obj.balance);
   }
 
   @override

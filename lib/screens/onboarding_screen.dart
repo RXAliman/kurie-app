@@ -30,18 +30,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           'See exactly how every peso of your electricity bill is calculated. No hidden fees, ever.',
     ),
     _OnboardingPage(
-      icon: Icons.photo_camera_rounded,
-      accentIcon: Icons.verified_outlined,
-      title: 'Evidence-Based\nTrust',
-      subtitle:
-          'Photo attachments of actual meter readings build trust between admin and tenants.',
-    ),
-    _OnboardingPage(
       icon: Icons.notifications_active_rounded,
       accentIcon: Icons.bolt_outlined,
       title: 'Real-time\nAlerts',
-      subtitle:
-          'Get notified as soon as a bill is finalized. Never miss a billing cycle again.',
+      subtitle: 'Get reminded as soon as the new billing cycle starts.',
     ),
   ];
 

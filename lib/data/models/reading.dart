@@ -16,14 +16,14 @@ class Reading extends HiveObject {
   @HiveField(3)
   final DateTime timestamp;
 
-  @HiveField(4)
-  final String? imageUrl;
+  @HiveField(5)
+  final double balance;
 
   Reading({
     required this.id,
     required this.submeterId,
     required this.value,
     required this.timestamp,
-    this.imageUrl,
+    this.balance = 0.0,
   });
 }

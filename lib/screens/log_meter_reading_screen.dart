@@ -15,11 +15,13 @@ class LogMeterReadingScreen extends StatefulWidget {
 
 class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
   final _readingController = TextEditingController();
+  final _balanceController = TextEditingController(text: '0');
   String? _selectedSubmeterId;
 
   @override
   void dispose() {
     _readingController.dispose();
+    _balanceController.dispose();
     super.dispose();
   }
 
@@ -27,7 +29,21 @@ class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final submeters = context.watch<AppRepository>().submeters;
-    final selectedSubmeter = _selectedSubmeterId != null 
+    final readings = context.watch<AppRepository>().readings;
+
+    final filteredSubmeters = submeters.where((s) {
+      final meterReadings = readings
+          .where((r) => r.submeterId == s.id)
+          .toList();
+      if (meterReadings.isEmpty || meterReadings.length == 1) return true;
+
+      final latest = meterReadings.reduce(
+        (a, b) => a.timestamp.isAfter(b.timestamp) ? a : b,
+      );
+      return DateTime.now().difference(latest.timestamp).inDays >= 7;
+    }).toList();
+
+    final selectedSubmeter = _selectedSubmeterId != null
         ? submeters.firstWhere((s) => s.id == _selectedSubmeterId)
         : null;
     final lastReading = selectedSubmeter?.lastReading ?? '0';
@@ -47,33 +63,58 @@ class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Enter the current value from the analog or digital display.',
-                style: TextStyle(fontSize: 16, height: 24 / 16,
-                    color: colorScheme.onSurfaceVariant)),
+            Text(
+              'Enter the current value from the analog or digital display.',
+              style: TextStyle(
+                fontSize: 16,
+                height: 24 / 16,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
             const SizedBox(height: 8),
             // Info banner
-            Container(
-              width: double.infinity, padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer.withAlpha(40),
-                borderRadius: BorderRadius.circular(4),
+            if (_selectedSubmeterId != null) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer.withAlpha(40),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline_rounded,
+                      size: 18,
+                      color: colorScheme.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Last reading: $lastReading kWh.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: Row(children: [
-                Icon(Icons.info_outline_rounded, size: 18, color: colorScheme.primary),
-                const SizedBox(width: 8),
-                Expanded(child: Text(
-                  'Last reading: $lastReading kWh.',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500,
-                      color: colorScheme.primary),
-                )),
-              ]),
-            ),
-            const SizedBox(height: 24),
-
+              const SizedBox(height: 24),
+            ],
 
             // Select submeter
-            Text('SUBMETER', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700,
-                letterSpacing: 1.0, color: colorScheme.onSurfaceVariant)),
+            Text(
+              'SUBMETER',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.0,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
             const SizedBox(height: 8),
             Container(
               width: double.infinity,
@@ -86,11 +127,25 @@ class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   dropdownColor: colorScheme.surfaceContainerLowest,
-                  value: _selectedSubmeterId,
-                  hint: Text('Select submeter', style: TextStyle(color: colorScheme.outline)),
+                  value:
+                      filteredSubmeters.any((s) => s.id == _selectedSubmeterId)
+                      ? _selectedSubmeterId
+                      : null,
+                  hint: Text(
+                    'Select submeter',
+                    style: TextStyle(color: colorScheme.outline),
+                  ),
                   isExpanded: true,
-                  items: submeters
-                      .map((s) => DropdownMenuItem(value: s.id, child: Text(s.unit, style: TextStyle(color: colorScheme.onSurface))))
+                  items: filteredSubmeters
+                      .map(
+                        (s) => DropdownMenuItem(
+                          value: s.id,
+                          child: Text(
+                            s.tenantId,
+                            style: TextStyle(color: colorScheme.onSurface),
+                          ),
+                        ),
+                      )
                       .toList(),
                   onChanged: (v) => setState(() => _selectedSubmeterId = v),
                 ),
@@ -99,65 +154,92 @@ class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
             const SizedBox(height: 24),
 
             // Current Reading
-            Text('CURRENT READING (kWh)', style: TextStyle(fontSize: 12,
-                fontWeight: FontWeight.w700, letterSpacing: 1.0,
-                color: colorScheme.onSurfaceVariant)),
+            Text(
+              'CURRENT READING (kWh)',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.0,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
             const SizedBox(height: 8),
             TextField(
               controller: _readingController,
               keyboardType: TextInputType.number,
-              style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700,
-                  color: colorScheme.onSurface,
-                  fontFeatures: const [FontFeature.tabularFigures()]),
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.w700,
+                color: colorScheme.onSurface,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
               decoration: InputDecoration(
                 hintText: '0',
-                hintStyle: TextStyle(fontSize: 32, fontWeight: FontWeight.w700,
-                    color: colorScheme.outlineVariant),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                hintStyle: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.outlineVariant,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 20,
+                ),
               ),
             ),
             const SizedBox(height: 24),
 
-            // Photo attachment zone
-            Text('PHOTO EVIDENCE (OPTIONAL)', style: TextStyle(fontSize: 12,
-                fontWeight: FontWeight.w700, letterSpacing: 1.0,
-                color: colorScheme.onSurfaceVariant)),
+            // Balance
+            Text(
+              'PREVIOUS BALANCE (PHP)',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.0,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
             const SizedBox(height: 8),
-            InkWell(
-              onTap: () {},
-              borderRadius: BorderRadius.circular(6),
-              child: Container(
-                width: double.infinity, height: 120,
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainer,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: colorScheme.outlineVariant,
-                    style: BorderStyle.solid,
-                  ),
+            TextField(
+              controller: _balanceController,
+              keyboardType: TextInputType.number,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: colorScheme.onSurface,
+              ),
+              decoration: InputDecoration(
+                hintText: '0.00',
+                prefixText: '₱ ',
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
                 ),
-                child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Icon(Icons.add_a_photo_outlined, size: 32, color: colorScheme.outline),
-                  const SizedBox(height: 8),
-                  Text('Tap to capture meter photo',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500,
-                          color: colorScheme.outline)),
-                ]),
               ),
             ),
             const SizedBox(height: 32),
 
             // Submit
             SizedBox(
-              width: double.infinity, height: 48,
+              width: double.infinity,
+              height: 48,
               child: ElevatedButton(
                 onPressed: () async {
-                  final newValue = double.tryParse(_readingController.text) ?? 0.0;
-                  final lastReadingValue = double.tryParse(selectedSubmeter?.lastReading ?? '0') ?? 0.0;
+                  final newValue =
+                      double.tryParse(_readingController.text) ?? 0.0;
+                  final balance =
+                      double.tryParse(_balanceController.text) ?? 0.0;
+                  final lastReadingValue =
+                      double.tryParse(selectedSubmeter?.lastReading ?? '0') ??
+                      0.0;
 
-                  if (_selectedSubmeterId == null || _readingController.text.isEmpty) {
+                  if (_selectedSubmeterId == null ||
+                      _readingController.text.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please select a submeter and enter a reading')),
+                      const SnackBar(
+                        content: Text(
+                          'Please select a submeter and enter a reading',
+                        ),
+                      ),
                     );
                     return;
                   }
@@ -165,7 +247,9 @@ class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
                   if (newValue <= lastReadingValue) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('New reading must be greater than the last reading ($lastReadingValue kWh)'),
+                        content: Text(
+                          'New reading must be greater than the last reading ($lastReadingValue kWh)',
+                        ),
                         backgroundColor: colorScheme.error,
                       ),
                     );
@@ -181,6 +265,7 @@ class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
                     submeterId: _selectedSubmeterId!,
                     timestamp: DateTime.now(),
                     value: newValue,
+                    balance: balance,
                   );
 
                   await appRepo.addReading(newReading);
@@ -188,7 +273,9 @@ class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
                   if (!mounted) return;
 
                   messenger.showSnackBar(
-                    const SnackBar(content: Text('Reading logged successfully')),
+                    const SnackBar(
+                      content: Text('Reading logged successfully'),
+                    ),
                   );
                   navigator.pop();
                 },

@@ -120,12 +120,13 @@ class AppRepository extends ChangeNotifier {
           id: 'BILL-${DateTime.now().millisecondsSinceEpoch}',
           submeterId: reading.submeterId,
           month: DateFormat('MMMM yyyy').format(reading.timestamp),
-          amount: usage * currentRate,
+          amount: (usage * currentRate) + reading.balance,
           kwh: usage,
           status: 'Pending',
           timestamp: DateTime.now(),
           previousReading: prev.value,
           currentReading: reading.value,
+          balance: reading.balance,
         );
         await _db.addBill(bill);
       }

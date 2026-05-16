@@ -31,6 +31,9 @@ class Bill extends HiveObject {
   @HiveField(8)
   final double? currentReading;
 
+  @HiveField(9)
+  final double balance;
+
   Bill({
     required this.id,
     required this.submeterId,
@@ -41,5 +44,6 @@ class Bill extends HiveObject {
     required this.timestamp,
     this.previousReading,
     this.currentReading,
+    this.balance = 0.0,
   });
 }

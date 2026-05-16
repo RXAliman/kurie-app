@@ -21,7 +21,7 @@ class ReadingAdapter extends TypeAdapter<Reading> {
       submeterId: fields[1] as String,
       value: (fields[2] as num).toDouble(),
       timestamp: fields[3] as DateTime,
-      imageUrl: fields[4] as String?,
+      balance: fields[5] == null ? 0.0 : (fields[5] as num).toDouble(),
     );
   }
 
@@ -37,8 +37,8 @@ class ReadingAdapter extends TypeAdapter<Reading> {
       ..write(obj.value)
       ..writeByte(3)
       ..write(obj.timestamp)
-      ..writeByte(4)
-      ..write(obj.imageUrl);
+      ..writeByte(5)
+      ..write(obj.balance);
   }
 
   @override

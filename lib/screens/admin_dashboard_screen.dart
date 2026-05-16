@@ -102,7 +102,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               Expanded(
                 child: _buildActionCard(
                   colorScheme: colorScheme,
-                  icon: Icons.add_a_photo_rounded,
+                  icon: Icons.electric_meter_rounded,
                   label: 'Log Reading',
                   onTap: () => Navigator.of(context).pushNamed('/log_reading'),
                 ),
