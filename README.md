@@ -4,18 +4,17 @@
 
 ## ⚡ Overview
 
-**Kurie** is an electricity submetering application designed to streamline electricity usage tracking and billing. Built with Flutter, it provides property managers with a robust set of tools to manage electricity assets, log readings accurately, and ensure transparent billing for tenants.
+**Kurie** (pronounced "Kyu-ree") is an electricity submetering application designed to streamline electricity usage tracking and billing. Built with Flutter, it provides property managers with a robust set of tools to manage electricity assets, log readings accurately, and ensure transparent billing for tenants.
 
 ## ✨ Key Features
 
-- 📊 **Unified Dashboard**: Real-time overview of all properties, submeters, and billing statuses.
+- 📊 **Unified Dashboard**: Real-time overview of all submeters and billing statuses.
 - 📝 **Smart Meter Logging**: Fast and accurate recording of meter readings with historical validation.
 - 🧾 **Automated Billing**: Configurable billing rules with professional PDF generation and printing.
-- 🏢 **Property Management**: Organized hierarchy of properties, units, and individual submeters.
-- 🔐 **Role-Based Access**: Dedicated workflows for Administrators and read-only transparency for Tenants.
-- 📈 **Visual Insights**: Historical ledgers and consumption analytics to track usage patterns.
+- 🏢 **Submeter Management**: Organized individual submeters.
 - 🔔 **Alert System**: Local notifications for billing reminders and critical updates.
 - 📂 **Offline First**: High-performance local data persistence for seamless usage anywhere.
+- 💡 **Light and Dark Theme Capability**: Change to high brightness or low brightness color scheme.
 
 ## 🛠️ Technical Stack
 
