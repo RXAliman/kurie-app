@@ -17,6 +17,8 @@ class LedgerHistoryScreen extends StatefulWidget {
 
 class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
   String _selectedFilter = 'All';
+  int _currentPage = 0;
+  static const int _pageSize = 10;
 
   @override
   Widget build(BuildContext context) {
@@ -26,15 +28,26 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
     final submeters = context.watch<AppRepository>().submeters;
 
     final List<dynamic> items = [];
-    if (_selectedFilter == 'All' || _selectedFilter == 'Readings') items.addAll(readings);
-    if (_selectedFilter == 'All' || _selectedFilter == 'Bills') items.addAll(bills);
-    
+    if (_selectedFilter == 'All' || _selectedFilter == 'Readings') {
+      items.addAll(readings);
+    }
+    if (_selectedFilter == 'All' || _selectedFilter == 'Bills') {
+      items.addAll(bills);
+    }
+
     // Sort by timestamp descending
     items.sort((a, b) {
       final tA = a is Reading ? a.timestamp : (a as Bill).timestamp;
       final tB = b is Reading ? b.timestamp : (b as Bill).timestamp;
       return tB.compareTo(tA);
     });
+
+    // Pagination logic
+    final totalPages = (items.length / _pageSize).ceil();
+    final paginatedItems = items
+        .skip(_currentPage * _pageSize)
+        .take(_pageSize)
+        .toList();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
@@ -67,8 +80,6 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
                 _filterChip(colorScheme, 'Readings'),
                 const SizedBox(width: 8),
                 _filterChip(colorScheme, 'Bills'),
-                const SizedBox(width: 8),
-                _filterChip(colorScheme, 'Alerts'),
               ],
             ),
           ),
@@ -93,8 +104,8 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
                 ),
               ),
             )
-          else
-            ...items.map((item) {
+          else ...[
+            ...paginatedItems.map((item) {
               if (item is Reading) {
                 final meter = submeters.cast<Submeter?>().firstWhere(
                   (s) => s?.id == item.submeterId,
@@ -106,7 +117,8 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
                   icon: Icons.electric_meter_rounded,
                   iconColor: colorScheme.onSurfaceVariant,
                   title: 'Meter Reading',
-                  subtitle: '${meter?.unit ?? 'Unknown Meter'} — ${item.value} kWh',
+                  subtitle:
+                      '${meter?.unit ?? 'Unknown Meter'} — ${item.value} kWh',
                   amount: null,
                   date: '${item.timestamp.day}/${item.timestamp.month}',
                 );
@@ -123,12 +135,50 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
                   iconColor: colorScheme.primary,
                   title: 'Monthly Bill',
                   subtitle: '${meter?.unit ?? 'Unknown'} — ${bill.month}',
-                  amount: 'P${bill.amount.toStringAsFixed(2)}',
+                  amount: '₱${bill.amount.toStringAsFixed(2)}',
                   date: '${bill.timestamp.day}/${bill.timestamp.month}',
-                  onTap: () => Navigator.of(context).pushNamed('/bill_details', arguments: bill.id),
+                  onTap: () => Navigator.of(
+                    context,
+                  ).pushNamed('/bill_details', arguments: bill.id),
                 );
               }
             }),
+
+            if (items.length > _pageSize) ...[
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    'Page ${_currentPage + 1} of $totalPages',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_left_rounded, size: 20),
+                    onPressed: _currentPage > 0
+                        ? () => setState(() => _currentPage--)
+                        : null,
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_right_rounded, size: 20),
+                    onPressed: _currentPage < totalPages - 1
+                        ? () => setState(() => _currentPage++)
+                        : null,
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+            ],
+          ],
         ],
       ),
     );
@@ -182,7 +232,9 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isAlert ? colorScheme.tertiaryContainer.withAlpha(40) : colorScheme.surfaceContainerLowest,
+            color: isAlert
+                ? colorScheme.tertiaryContainer.withAlpha(40)
+                : colorScheme.surfaceContainerLowest,
             border: Border.all(
               color: isAlert
                   ? colorScheme.tertiaryContainer.withAlpha(120)
@@ -211,7 +263,9 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: isAlert ? colorScheme.tertiary : colorScheme.onSurface,
+                        color: isAlert
+                            ? colorScheme.tertiary
+                            : colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 2),

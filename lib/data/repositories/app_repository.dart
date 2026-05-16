@@ -98,6 +98,11 @@ class AppRepository extends ChangeNotifier {
     _loadData();
   }
 
+  Future<void> deleteSubmeter(String id) async {
+    await _db.deleteSubmeter(id);
+    _loadData();
+  }
+
   Future<void> addReading(Reading reading) async {
     // Get the previous reading for this submeter before adding the new one
     final meterReadings = _readings.where((r) => r.submeterId == reading.submeterId).toList()

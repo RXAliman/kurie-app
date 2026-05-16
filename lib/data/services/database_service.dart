@@ -108,4 +108,15 @@ class DatabaseService {
   Future<void> addBill(Bill bill) async {
     await billsBox.put(bill.id, bill);
   }
+
+  Future<void> deleteSubmeter(String id) async {
+    await submetersBox.delete(id);
+    
+    // Also cleanup readings and bills for this submeter
+    final readingsToDelete = readingsBox.values.where((r) => r.submeterId == id).map((r) => r.id).toList();
+    await readingsBox.deleteAll(readingsToDelete);
+    
+    final billsToDelete = billsBox.values.where((b) => b.submeterId == id).map((b) => b.id).toList();
+    await billsBox.deleteAll(billsToDelete);
+  }
 }

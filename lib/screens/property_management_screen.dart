@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../app/theme/kurie_colors.dart';
 import '../data/repositories/app_repository.dart';
 import 'add_submeter_screen.dart';
+import 'submeter_details_screen.dart';
 
-/// Property Management screen — matches Stitch "Property Management" design.
-/// Lists all submeters in a property with status and last reading info.
 class PropertyManagementScreen extends StatefulWidget {
   const PropertyManagementScreen({super.key});
 
@@ -15,35 +13,61 @@ class PropertyManagementScreen extends StatefulWidget {
 
 class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
   final TextEditingController _searchController = TextEditingController();
+  int _currentPage = 0;
+  static const int _pageSize = 10;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _currentPage = 0; // Reset pagination on search
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final submeters = context.watch<AppRepository>().submeters;
+    final colorScheme = Theme.of(context).colorScheme;
+    final allSubmeters = context.watch<AppRepository>().submeters;
+    
+    // Filter logic
+    final filteredSubmeters = allSubmeters.where((m) {
+      final query = _searchController.text.toLowerCase();
+      return m.unit.toLowerCase().contains(query) || 
+             m.tenantId.toLowerCase().contains(query);
+    }).toList();
+
+    // Pagination logic
+    final totalPages = (filteredSubmeters.length / _pageSize).ceil();
+    final paginatedSubmeters = filteredSubmeters
+        .skip(_currentPage * _pageSize)
+        .take(_pageSize)
+        .toList();
 
     return Scaffold(
-      backgroundColor: KurieColors.surface,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: const Text('Property Management'),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AddSubmeterScreen()),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: KurieColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                minimumSize: const Size(0, 36),
-              ),
-              child: const Text('Add Submeter', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-            ),
-          ),
-        ],
+        backgroundColor: colorScheme.surface,
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddSubmeterScreen()),
+          );
+        },
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('Add Submeter'),
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,142 +78,163 @@ class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'My Property',
                   style: TextStyle(
-                    fontFamily: 'Inter',
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
-                    color: KurieColors.onSurface,
+                    color: colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${submeters.length} Submeters Total',
-                  style: const TextStyle(
-                    fontFamily: 'Inter',
+                  '${allSubmeters.length} Submeters Total',
+                  style: TextStyle(
                     fontSize: 14,
-                    color: KurieColors.onSurfaceVariant,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
             ),
           ),
           
-          // ... rest of the build method
-
-
-          // Search Bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search submeter or tenant...',
-                prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                fillColor: KurieColors.surfaceContainerLowest,
-                filled: true,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(4),
-                  borderSide: const BorderSide(color: KurieColors.outlineVariant),
+          // Search Bar (Only if 5 or more total submeters)
+          if (allSubmeters.length >= 5)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: TextField(
+                controller: _searchController,
+                style: TextStyle(color: colorScheme.onSurface),
+                decoration: InputDecoration(
+                  hintText: 'Search submeter or tenant...',
+                  prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  fillColor: colorScheme.surfaceContainerLow,
+                  filled: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(4),
+                    borderSide: BorderSide(color: colorScheme.outlineVariant),
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 20),
+          
+          if (allSubmeters.length >= 5) const SizedBox(height: 20),
 
           // List
           Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
-              itemCount: submeters.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final meter = submeters[index];
-                final isActive = meter.status == 'Active';
+            child: paginatedSubmeters.isEmpty
+                ? Center(
+                    child: Text(
+                      'No units found',
+                      style: TextStyle(color: colorScheme.onSurfaceVariant),
+                    ),
+                  )
+                : ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                    itemCount: paginatedSubmeters.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final meter = paginatedSubmeters[index];
 
-                return Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: KurieColors.surfaceContainerLowest,
-                    border: Border.all(color: KurieColors.outlineVariant),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            meter.unit,
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: isActive ? KurieColors.primaryFixed : KurieColors.outlineVariant.withAlpha(50),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              meter.status.toUpperCase(),
+                      return Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: colorScheme.surfaceContainerLowest,
+                          border: Border.all(color: colorScheme.outlineVariant),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              meter.tenantId,
                               style: TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
-                                color: isActive ? KurieColors.onPrimaryFixed : KurieColors.onSurfaceVariant,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: colorScheme.onSurface,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      _infoRow(Icons.person_outline_rounded, 'Tenant: ${meter.tenantId}'),
-                      const SizedBox(height: 4),
-                      _infoRow(Icons.history_rounded, 'Last Reading: ${meter.lastReading}'),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton(
-                          onPressed: () {},
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: KurieColors.primary),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          child: const Text('Manage Unit', style: TextStyle(fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Icon(Icons.history_rounded, size: 14, color: colorScheme.onSurfaceVariant),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Last Reading: ${meter.lastReading} kWh',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => SubmeterDetailsScreen(submeterId: meter.id),
+                                    ),
+                                  );
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(color: colorScheme.primary),
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                ),
+                                child: const Text('Manage Unit', style: TextStyle(fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
+
+          // Pagination Controls (Only if 10 or more total filtered submeters)
+          if (filteredSubmeters.length > _pageSize)
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+                border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    'Page ${_currentPage + 1} of $totalPages',
+                    style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                  ),
+                  const SizedBox(width: 4),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_left_rounded, size: 20),
+                    onPressed: _currentPage > 0 
+                        ? () => setState(() => _currentPage--) 
+                        : null,
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_right_rounded, size: 20),
+                    onPressed: _currentPage < totalPages - 1 
+                        ? () => setState(() => _currentPage++) 
+                        : null,
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
-    );
-  }
-
-  Widget _infoRow(IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: KurieColors.onSurfaceVariant),
-        const SizedBox(width: 8),
-        Text(
-          text,
-          style: const TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 13,
-            color: KurieColors.onSurfaceVariant,
-          ),
-        ),
-      ],
     );
   }
 }

@@ -21,7 +21,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final submeters = context.watch<AppRepository>().submeters;
-    final readings = context.watch<AppRepository>().readings;
     final bills = context.watch<AppRepository>().bills;
 
     return SingleChildScrollView(
@@ -87,80 +86,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           if (submeters.isNotEmpty) _buildTrendAlert(colorScheme),
           if (submeters.isNotEmpty) const SizedBox(height: 24),
 
-          // Active Submeters section
-          Row(
-            children: [
-              Icon(
-                Icons.device_hub_rounded,
-                size: 20,
-                color: colorScheme.primary,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Active Submeters',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          ...submeters.map((meter) {
-            final meterReadings =
-                readings.where((r) => r.submeterId == meter.id).toList()
-                  ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
-
-            double usage = 0;
-            double amount = 0;
-            if (meterReadings.length >= 2) {
-              usage = meterReadings[0].value - meterReadings[1].value;
-              // Assuming a default rate of 12.0 per kWh if not configured
-              amount = usage * 12.0;
-            }
-
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: _buildSubmeterCard(
-                colorScheme: colorScheme,
-                name: meter.unit,
-                currentReading: '${meter.lastReading} kWh',
-                usage: '${usage.toStringAsFixed(1)} kWh',
-                amount: '₱${amount.toStringAsFixed(2)}',
-                trend: '0%',
-                trendUp: false,
-              ),
-            );
-          }),
-
-          if (submeters.isEmpty)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: colorScheme.outlineVariant),
-              ),
-              child: Center(
-                child: Text(
-                  'No submeters added yet.',
-                  style: TextStyle(
-                    color: colorScheme.onSurfaceVariant,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-            ),
-          const SizedBox(height: 24),
-
-          // Billing Configuration Card
-          _buildBillingConfigCard(context, colorScheme),
-          const SizedBox(height: 24),
-
           // Quick Actions
           Text(
             'Quick Actions',
@@ -201,9 +126,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   onTap: () async {
                     final appRepo = context.read<AppRepository>();
                     if (appRepo.bills.isEmpty) {
-                      String message = 'No bills available to generate summary.';
+                      String message =
+                          'No bills available to generate summary.';
                       if (appRepo.readings.isNotEmpty) {
-                        message += ' Need at least two readings per meter to calculate usage.';
+                        message +=
+                            ' Need at least two readings per meter to calculate usage.';
                       } else {
                         message += ' Log some readings first.';
                       }
@@ -229,6 +156,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
             ],
           ),
+          const SizedBox(height: 24),
+
+          // Billing Configuration Card
+          _buildBillingConfigCard(context, colorScheme),
         ],
       ),
     );
@@ -251,7 +182,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildContributionsCard(BuildContext context, ColorScheme colorScheme, List<Bill> bills) {
+  Widget _buildContributionsCard(
+    BuildContext context,
+    ColorScheme colorScheme,
+    List<Bill> bills,
+  ) {
     final totalAmount = bills.fold<double>(0, (sum, bill) => sum + bill.amount);
     final currencyFormat = NumberFormat.currency(symbol: '₱', decimalDigits: 2);
 
@@ -364,126 +299,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildSubmeterCard({
-    required ColorScheme colorScheme,
-    required String name,
-    required String currentReading,
-    required String usage,
-    required String amount,
-    required String trend,
-    required bool trendUp,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
-        border: Border.all(color: colorScheme.outlineVariant),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                name,
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: trendUp
-                      ? colorScheme.tertiaryContainer.withAlpha(80)
-                      : colorScheme.primaryContainer.withAlpha(80),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      trendUp ? Icons.arrow_upward : Icons.arrow_downward,
-                      size: 12,
-                      color: trendUp
-                          ? colorScheme.tertiary
-                          : colorScheme.primary,
-                    ),
-                    const SizedBox(width: 2),
-                    Text(
-                      trend,
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: trendUp
-                            ? colorScheme.tertiary
-                            : colorScheme.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              _submeterStat(colorScheme, 'Reading', currentReading),
-              const SizedBox(width: 24),
-              _submeterStat(colorScheme, 'Usage', usage),
-              const Spacer(),
-              Text(
-                amount,
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: colorScheme.onSurface,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _submeterStat(ColorScheme colorScheme, String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label.toUpperCase(),
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 10,
-            fontWeight: FontWeight.w500,
-            letterSpacing: 0.8,
-            color: colorScheme.outline,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBillingConfigCard(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildBillingConfigCard(
+    BuildContext context,
+    ColorScheme colorScheme,
+  ) {
     final appRepo = context.watch<AppRepository>();
     final currencyFormat = NumberFormat.currency(symbol: '₱', decimalDigits: 2);
 
@@ -503,7 +322,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.settings_suggest_rounded, size: 18, color: colorScheme.primary),
+                  Icon(
+                    Icons.settings_suggest_rounded,
+                    size: 18,
+                    color: colorScheme.primary,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     'BILLING CONFIGURATION',
@@ -518,12 +341,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ],
               ),
               TextButton.icon(
-                onPressed: () => Navigator.of(context).pushNamed('/billing_config'),
+                onPressed: () =>
+                    Navigator.of(context).pushNamed('/billing_config'),
                 icon: const Icon(Icons.edit_outlined, size: 16),
                 label: const Text('Edit'),
                 style: TextButton.styleFrom(
                   visualDensity: VisualDensity.compact,
-                  textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                  textStyle: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
@@ -535,7 +362,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 child: _billingStat(
                   colorScheme,
                   appRepo.useProRata ? 'Monthly Bill' : 'Rate Method',
-                  appRepo.useProRata ? currencyFormat.format(appRepo.totalBill) : 'Constant Rate',
+                  appRepo.useProRata
+                      ? currencyFormat.format(appRepo.totalBill)
+                      : 'Constant Rate',
                 ),
               ),
               Expanded(
@@ -563,9 +392,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            appRepo.useProRata 
-              ? 'Based on pro-rata distribution of the total master bill among all active submeters.' 
-              : 'Flat rate applied consistently to all submeter consumption.',
+            appRepo.useProRata
+                ? 'Based on pro-rata distribution of the total master bill among all active submeters.'
+                : 'Flat rate applied consistently to all submeter consumption.',
             style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
           ),
         ],
@@ -573,7 +402,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _billingStat(ColorScheme colorScheme, String label, String value, {bool isHighlight = false}) {
+  Widget _billingStat(
+    ColorScheme colorScheme,
+    String label,
+    String value, {
+    bool isHighlight = false,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
