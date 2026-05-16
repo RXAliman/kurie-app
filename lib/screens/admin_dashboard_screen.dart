@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../app/theme/kurie_colors.dart';
+
 import '../data/repositories/app_repository.dart';
 import '../data/services/pdf_service.dart';
 import 'package:printing/printing.dart';
@@ -17,6 +17,7 @@ class AdminDashboardScreen extends StatefulWidget {
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final submeters = context.watch<AppRepository>().submeters;
     final readings = context.watch<AppRepository>().readings;
 
@@ -39,13 +40,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.24,
-                      color: KurieColors.onSurface,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      _syncDot(),
+                      _syncDot(colorScheme),
                       const SizedBox(width: 6),
                       Text(
                         'Synced • just now',
@@ -53,7 +54,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           fontFamily: 'Inter',
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: KurieColors.onSurfaceVariant,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -65,7 +66,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     Navigator.of(context).pushNamed('/notifications'),
                 icon: const Icon(Icons.notifications_outlined),
                 style: IconButton.styleFrom(
-                  backgroundColor: KurieColors.surfaceContainerHigh,
+                  backgroundColor: colorScheme.surfaceContainerHigh,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -76,11 +77,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           const SizedBox(height: 24),
 
           // Total Sub-user Contributions card
-          _buildContributionsCard(context),
+          _buildContributionsCard(context, colorScheme),
           const SizedBox(height: 16),
 
           // Trend Alert
-          if (submeters.isNotEmpty) _buildTrendAlert(),
+          if (submeters.isNotEmpty) _buildTrendAlert(colorScheme),
           if (submeters.isNotEmpty) const SizedBox(height: 24),
 
           // Active Submeters section
@@ -89,7 +90,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               Icon(
                 Icons.device_hub_rounded,
                 size: 20,
-                color: KurieColors.primary,
+                color: colorScheme.primary,
               ),
               const SizedBox(width: 8),
               Text(
@@ -98,7 +99,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   fontFamily: 'Inter',
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: KurieColors.onSurface,
+                  color: colorScheme.onSurface,
                 ),
               ),
             ],
@@ -121,6 +122,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             return Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: _buildSubmeterCard(
+                colorScheme: colorScheme,
                 name: meter.name,
                 currentReading: '${meter.lastReading} kWh',
                 usage: '${usage.toStringAsFixed(1)} kWh',
@@ -136,15 +138,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: KurieColors.surfaceContainerLow,
+                color: colorScheme.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: KurieColors.outlineVariant),
+                border: Border.all(color: colorScheme.outlineVariant),
               ),
-              child: const Center(
+              child: Center(
                 child: Text(
                   'No submeters added yet.',
                   style: TextStyle(
-                    color: KurieColors.onSurfaceVariant,
+                    color: colorScheme.onSurfaceVariant,
                     fontSize: 13,
                   ),
                 ),
@@ -159,7 +161,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               fontFamily: 'Inter',
               fontSize: 14,
               fontWeight: FontWeight.w700,
-              color: KurieColors.onSurface,
+              color: colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 12),
@@ -167,6 +169,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             children: [
               Expanded(
                 child: _buildActionCard(
+                  colorScheme: colorScheme,
                   icon: Icons.add_a_photo_rounded,
                   label: 'Log Reading',
                   onTap: () => Navigator.of(context).pushNamed('/log_reading'),
@@ -175,6 +178,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: _buildActionCard(
+                  colorScheme: colorScheme,
                   icon: Icons.home_work_rounded,
                   label: 'Property',
                   onTap: () =>
@@ -184,17 +188,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: _buildActionCard(
+                  colorScheme: colorScheme,
                   icon: Icons.summarize_rounded,
                   label: 'Generate Summary',
                   onTap: () async {
                     final appRepo = context.read<AppRepository>();
                     if (appRepo.bills.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
+                        SnackBar(
+                          content: const Text(
                             'No bills available to generate summary. Log some readings first.',
                           ),
-                          backgroundColor: KurieColors.tertiary,
+                          backgroundColor: colorScheme.tertiary,
                         ),
                       );
                       return;
@@ -218,7 +223,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _syncDot() {
+  Widget _syncDot(ColorScheme colorScheme) {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.5, end: 1.0),
       duration: const Duration(milliseconds: 1200),
@@ -228,20 +233,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           height: 8,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: KurieColors.primaryFixed.withAlpha((value * 255).toInt()),
+            color: colorScheme.primary.withAlpha((value * 255).toInt()),
           ),
         );
       },
     );
   }
 
-  Widget _buildContributionsCard(BuildContext context) {
+  Widget _buildContributionsCard(BuildContext context, ColorScheme colorScheme) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: KurieColors.surfaceContainerLowest,
-        border: Border.all(color: KurieColors.outlineVariant),
+        color: colorScheme.surfaceContainerLowest,
+        border: Border.all(color: colorScheme.outlineVariant),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Column(
@@ -252,7 +257,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               Icon(
                 Icons.electric_meter_rounded,
                 size: 18,
-                color: KurieColors.primary,
+                color: colorScheme.primary,
               ),
               const SizedBox(width: 8),
               Text(
@@ -262,7 +267,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.0,
-                  color: KurieColors.onSurfaceVariant,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -276,7 +281,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               fontWeight: FontWeight.w600,
               height: 48 / 40,
               letterSpacing: -0.8,
-              color: KurieColors.onSurface,
+              color: colorScheme.onSurface,
               fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
@@ -287,7 +292,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               fontFamily: 'Inter',
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: KurieColors.onSurfaceVariant,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -295,14 +300,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildTrendAlert() {
+  Widget _buildTrendAlert(ColorScheme colorScheme) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: KurieColors.surfaceContainerHigh,
+        color: colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: KurieColors.outlineVariant),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -310,7 +315,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           Icon(
             Icons.trending_up_rounded,
             size: 20,
-            color: KurieColors.tertiary,
+            color: colorScheme.tertiary,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -323,7 +328,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     fontFamily: 'Inter',
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: KurieColors.tertiary,
+                    color: colorScheme.tertiary,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -334,7 +339,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
                     height: 20 / 14,
-                    color: KurieColors.onSurfaceVariant,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -346,6 +351,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildSubmeterCard({
+    required ColorScheme colorScheme,
     required String name,
     required String currentReading,
     required String usage,
@@ -357,8 +363,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: KurieColors.surfaceContainerLowest,
-        border: Border.all(color: KurieColors.outlineVariant),
+        color: colorScheme.surfaceContainerLowest,
+        border: Border.all(color: colorScheme.outlineVariant),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Column(
@@ -373,15 +379,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   fontFamily: 'Inter',
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: KurieColors.onSurface,
+                  color: colorScheme.onSurface,
                 ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: trendUp
-                      ? KurieColors.tertiaryContainer.withAlpha(80)
-                      : KurieColors.primaryFixed.withAlpha(80),
+                      ? colorScheme.tertiaryContainer.withAlpha(80)
+                      : colorScheme.primaryContainer.withAlpha(80),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Row(
@@ -391,8 +397,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       trendUp ? Icons.arrow_upward : Icons.arrow_downward,
                       size: 12,
                       color: trendUp
-                          ? KurieColors.tertiary
-                          : KurieColors.primary,
+                          ? colorScheme.tertiary
+                          : colorScheme.primary,
                     ),
                     const SizedBox(width: 2),
                     Text(
@@ -402,8 +408,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                         color: trendUp
-                            ? KurieColors.tertiary
-                            : KurieColors.primary,
+                            ? colorScheme.tertiary
+                            : colorScheme.primary,
                       ),
                     ),
                   ],
@@ -414,9 +420,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           const SizedBox(height: 8),
           Row(
             children: [
-              _submeterStat('Reading', currentReading),
+              _submeterStat(colorScheme, 'Reading', currentReading),
               const SizedBox(width: 24),
-              _submeterStat('Usage', usage),
+              _submeterStat(colorScheme, 'Usage', usage),
               const Spacer(),
               Text(
                 amount,
@@ -424,7 +430,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   fontFamily: 'Inter',
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: KurieColors.onSurface,
+                  color: colorScheme.onSurface,
                   fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
@@ -435,7 +441,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _submeterStat(String label, String value) {
+  Widget _submeterStat(ColorScheme colorScheme, String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -446,7 +452,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             fontSize: 10,
             fontWeight: FontWeight.w500,
             letterSpacing: 0.8,
-            color: KurieColors.outline,
+            color: colorScheme.outline,
           ),
         ),
         const SizedBox(height: 2),
@@ -456,7 +462,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             fontFamily: 'Inter',
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: KurieColors.onSurfaceVariant,
+            color: colorScheme.onSurfaceVariant,
           ),
         ),
       ],
@@ -464,6 +470,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildActionCard({
+    required ColorScheme colorScheme,
     required IconData icon,
     required String label,
     required VoidCallback onTap,
@@ -474,13 +481,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: KurieColors.surfaceContainerLowest,
-          border: Border.all(color: KurieColors.outlineVariant),
+          color: colorScheme.surfaceContainerLowest,
+          border: Border.all(color: colorScheme.outlineVariant),
           borderRadius: BorderRadius.circular(4),
         ),
         child: Column(
           children: [
-            Icon(icon, size: 24, color: KurieColors.primary),
+            Icon(icon, size: 24, color: colorScheme.primary),
             const SizedBox(height: 8),
             Text(
               label,
@@ -488,7 +495,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 fontFamily: 'Inter',
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: KurieColors.onSurface,
+                color: colorScheme.onSurface,
               ),
             ),
           ],

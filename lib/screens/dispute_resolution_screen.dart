@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../app/theme/kurie_colors.dart';
+
 import '../data/repositories/app_repository.dart';
 
 /// Dispute Resolution screen — matches Stitch "Dispute Resolution" design.
@@ -17,17 +17,18 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final disputes = context.watch<AppRepository>().disputes;
     final pendingDisputes = disputes.where((d) => d.status == 'Pending').toList();
 
     return Scaffold(
-      backgroundColor: KurieColors.surface,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: KurieColors.surface,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: KurieColors.onSurface),
+          icon: Icon(Icons.arrow_back_rounded, color: colorScheme.onSurface),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
@@ -36,7 +37,7 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
             fontFamily: 'Inter',
             fontSize: 18,
             fontWeight: FontWeight.w700,
-            color: KurieColors.onSurface,
+            color: colorScheme.onSurface,
           ),
         ),
       ),
@@ -45,10 +46,10 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.check_circle_outline_rounded, size: 48, color: KurieColors.outline),
+                  Icon(Icons.check_circle_outline_rounded, size: 48, color: colorScheme.outline),
                   const SizedBox(height: 16),
                   Text('No pending disputes found',
-                      style: TextStyle(color: KurieColors.onSurfaceVariant)),
+                      style: TextStyle(color: colorScheme.onSurfaceVariant)),
                 ],
               ),
             )
@@ -61,7 +62,7 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Context Card for the first pending dispute
-                        _buildContextCard(pendingDisputes.first),
+                        _buildContextCard(colorScheme, pendingDisputes.first),
                         const SizedBox(height: 32),
 
                         // Message Thread (Placeholder for now)
@@ -72,11 +73,11 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.0,
-                            color: KurieColors.onSurfaceVariant,
+                            color: colorScheme.onSurfaceVariant,
                           ),
                         ),
                         const SizedBox(height: 16),
-                        _buildMessageItem({
+                        _buildMessageItem(colorScheme, {
                           'isSystem': false,
                           'sender': pendingDisputes.first.tenantName,
                           'text': 'I have a concern about my last reading.',
@@ -88,18 +89,18 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
                 ),
 
                 // Admin Actions & Input
-                _buildAdminControls(),
+                _buildAdminControls(colorScheme),
               ],
             ),
     );
   }
 
-  Widget _buildContextCard(dynamic dispute) {
+  Widget _buildContextCard(ColorScheme colorScheme, dynamic dispute) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: KurieColors.surfaceContainerLowest,
-        border: Border.all(color: KurieColors.outlineVariant),
+        color: colorScheme.surfaceContainerLowest,
+        border: Border.all(color: colorScheme.outlineVariant),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Column(
@@ -114,15 +115,15 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
                   fontFamily: 'Inter',
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: KurieColors.onSurface,
+                  color: colorScheme.onSurface,
                 ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: KurieColors.tertiaryFixed.withAlpha(51),
+                  color: colorScheme.tertiaryContainer.withAlpha(51),
                   borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: KurieColors.tertiary.withAlpha(76)),
+                  border: Border.all(color: colorScheme.tertiary.withAlpha(76)),
                 ),
                 child: Text(
                   dispute.status.toUpperCase(),
@@ -130,7 +131,7 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
                     fontFamily: 'Inter',
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
-                    color: KurieColors.tertiary,
+                    color: colorScheme.tertiary,
                   ),
                 ),
               ),
@@ -139,9 +140,9 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
           const SizedBox(height: 16),
           Row(
             children: [
-              _buildMetric('₱${dispute.amount.toStringAsFixed(2)}', 'AMOUNT'),
+              _buildMetric(colorScheme, '₱${dispute.amount.toStringAsFixed(2)}', 'AMOUNT'),
               const SizedBox(width: 32),
-              _buildMetric('${dispute.usage.toInt()} kWh', 'USAGE'),
+              _buildMetric(colorScheme, '${dispute.usage.toInt()} kWh', 'USAGE'),
             ],
           ),
           const SizedBox(height: 16),
@@ -149,7 +150,7 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
           const SizedBox(height: 16),
           Row(
             children: [
-              Icon(Icons.person_outline_rounded, size: 16, color: KurieColors.outline),
+              Icon(Icons.person_outline_rounded, size: 16, color: colorScheme.outline),
               const SizedBox(width: 8),
               Text(
                 'Submeter ${dispute.submeterId} - ${dispute.tenantName}',
@@ -157,7 +158,7 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
                   fontFamily: 'Inter',
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
-                  color: KurieColors.onSurfaceVariant,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -167,7 +168,7 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
     );
   }
 
-  Widget _buildMetric(String value, String label) {
+  Widget _buildMetric(ColorScheme colorScheme, String value, String label) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -178,7 +179,7 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
             fontSize: 10,
             fontWeight: FontWeight.w500,
             letterSpacing: 0.8,
-            color: KurieColors.outline,
+            color: colorScheme.outline,
           ),
         ),
         const SizedBox(height: 4),
@@ -188,7 +189,7 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
             fontFamily: 'Inter',
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: KurieColors.onSurface,
+            color: colorScheme.onSurface,
             fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
@@ -196,7 +197,7 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
     );
   }
 
-  Widget _buildMessageItem(Map<String, dynamic> message) {
+  Widget _buildMessageItem(ColorScheme colorScheme, Map<String, dynamic> message) {
     final bool isSystem = message['isSystem'];
 
     return Padding(
@@ -215,7 +216,7 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
                       fontFamily: 'Inter',
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: KurieColors.onSurface,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -225,7 +226,7 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
                       fontFamily: 'Inter',
                       fontSize: 11,
                       fontWeight: FontWeight.w400,
-                      color: KurieColors.outline,
+                      color: colorScheme.outline,
                     ),
                   ),
                 ],
@@ -234,9 +235,9 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
           Container(
             padding: EdgeInsets.all(isSystem ? 8 : 16),
             decoration: BoxDecoration(
-              color: isSystem ? Colors.transparent : KurieColors.surfaceContainerHigh,
+              color: isSystem ? Colors.transparent : colorScheme.surfaceContainerHigh,
               borderRadius: BorderRadius.circular(4),
-              border: isSystem ? null : Border.all(color: KurieColors.outlineVariant),
+              border: isSystem ? null : Border.all(color: colorScheme.outlineVariant),
             ),
             child: Text(
               message['text'],
@@ -246,7 +247,7 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
                 fontSize: isSystem ? 11 : 14,
                 fontStyle: isSystem ? FontStyle.italic : FontStyle.normal,
                 fontWeight: isSystem ? FontWeight.w500 : FontWeight.w400,
-                color: isSystem ? KurieColors.outline : KurieColors.onSurface,
+                color: isSystem ? colorScheme.outline : colorScheme.onSurface,
                 height: 1.4,
               ),
             ),
@@ -256,12 +257,12 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
     );
   }
 
-  Widget _buildAdminControls() {
+  Widget _buildAdminControls(ColorScheme colorScheme) {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
       decoration: BoxDecoration(
-        color: KurieColors.surfaceContainerLowest,
-        border: const Border(top: BorderSide(color: KurieColors.outlineVariant)),
+        color: colorScheme.surfaceContainerLowest,
+        border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -270,18 +271,20 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
             children: [
               Expanded(
                 child: _buildAdminAction(
+                  colorScheme: colorScheme,
                   icon: Icons.edit_rounded,
                   label: 'Adjust Reading',
-                  color: KurieColors.primary,
+                  color: colorScheme.primary,
                   onTap: () {},
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: _buildAdminAction(
+                  colorScheme: colorScheme,
                   icon: Icons.check_circle_rounded,
                   label: 'Resolve Dispute',
-                  color: KurieColors.onSurface,
+                  color: colorScheme.onSurface,
                   onTap: () {},
                 ),
               ),
@@ -295,18 +298,18 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
                   height: 48,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
-                    color: KurieColors.surfaceContainerLow,
+                    color: colorScheme.surfaceContainerLow,
                     borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: KurieColors.outlineVariant),
+                    border: Border.all(color: colorScheme.outlineVariant),
                   ),
                   child: TextField(
                     controller: _messageController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: 'Type a response...',
                       hintStyle: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 14,
-                        color: KurieColors.outline,
+                        color: colorScheme.outline,
                       ),
                       border: InputBorder.none,
                     ),
@@ -318,7 +321,7 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
                 height: 48,
                 width: 48,
                 decoration: BoxDecoration(
-                  color: KurieColors.primary,
+                  color: colorScheme.primary,
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
@@ -331,6 +334,7 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
   }
 
   Widget _buildAdminAction({
+    required ColorScheme colorScheme,
     required IconData icon,
     required String label,
     required Color color,
@@ -341,7 +345,7 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          border: Border.all(color: KurieColors.outlineVariant),
+          border: Border.all(color: colorScheme.outlineVariant),
           borderRadius: BorderRadius.circular(4),
         ),
         child: Row(

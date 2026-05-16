@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../app/theme/kurie_colors.dart';
+
 import '../data/services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -57,15 +57,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: KurieColors.surface,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_rounded,
-            color: KurieColors.onSurface,
+            color: colorScheme.onSurface,
           ),
           onPressed: () => Navigator.of(context).pop(),
         ),
@@ -79,23 +80,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
-                const Text(
-                  'Create an account',
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 32,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.64,
-                    color: KurieColors.onSurface,
+                  Text(
+                    'Create an account',
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 32,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.64,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
-                ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Join Kurie to manage your electricity submetering efficiently.',
                   style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 16,
-                    color: KurieColors.onSurfaceVariant,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -156,7 +157,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         _obscurePassword
                             ? Icons.visibility_off_outlined
                             : Icons.visibility_outlined,
-                        color: KurieColors.onSurfaceVariant,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                       onPressed: () =>
                           setState(() => _obscurePassword = !_obscurePassword),
@@ -175,8 +176,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _onRegister,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: KurieColors.primary,
-                      foregroundColor: Colors.white,
+                      backgroundColor: colorScheme.primary,
+                      foregroundColor: colorScheme.onPrimary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -206,12 +207,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
           fontFamily: 'Inter',
           fontSize: 12,
           fontWeight: FontWeight.w700,
           letterSpacing: 1.0,
-          color: KurieColors.onSurfaceVariant,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       ),
     );

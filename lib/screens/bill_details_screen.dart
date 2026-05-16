@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:printing/printing.dart';
-import '../app/theme/kurie_colors.dart';
+
 import '../data/models/bill.dart';
 import '../data/models/submeter.dart';
 import '../data/repositories/app_repository.dart';
@@ -15,6 +15,7 @@ class BillDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final appRepo = context.watch<AppRepository>();
     final Bill bill = appRepo.bills.firstWhere((b) => b.id == billId);
     final Submeter meter = appRepo.submeters.firstWhere((m) => m.id == bill.submeterId);
@@ -22,8 +23,9 @@ class BillDetailsScreen extends StatelessWidget {
     final currencyFormat = NumberFormat.currency(symbol: 'P', decimalDigits: 2);
 
     return Scaffold(
-      backgroundColor: KurieColors.surface,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
+        backgroundColor: colorScheme.surface,
         title: const Text('Bill Details'),
         actions: [
           IconButton(
@@ -49,8 +51,8 @@ class BillDetailsScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               decoration: BoxDecoration(
                 color: bill.status == 'Paid' 
-                    ? KurieColors.primaryFixed.withAlpha(40)
-                    : KurieColors.tertiaryContainer.withAlpha(40),
+                    ? colorScheme.primaryContainer.withAlpha(40)
+                    : colorScheme.tertiaryContainer.withAlpha(40),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Row(
@@ -58,14 +60,14 @@ class BillDetailsScreen extends StatelessWidget {
                   Icon(
                     bill.status == 'Paid' ? Icons.check_circle_rounded : Icons.pending_rounded,
                     size: 20,
-                    color: bill.status == 'Paid' ? KurieColors.primary : KurieColors.tertiary,
+                    color: bill.status == 'Paid' ? colorScheme.primary : colorScheme.tertiary,
                   ),
                   const SizedBox(width: 12),
                   Text(
                     'Bill is ${bill.status.toUpperCase()}',
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
-                      color: bill.status == 'Paid' ? KurieColors.primary : KurieColors.tertiary,
+                      color: bill.status == 'Paid' ? colorScheme.primary : colorScheme.tertiary,
                     ),
                   ),
                 ],
@@ -76,40 +78,40 @@ class BillDetailsScreen extends StatelessWidget {
             // Bill Summary Header
             Text(
               bill.month,
-              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, letterSpacing: -0.5),
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, letterSpacing: -0.5, color: colorScheme.onSurface),
             ),
             const SizedBox(height: 4),
             Text(
               'Bill ID: ${bill.id}',
-              style: const TextStyle(color: KurieColors.onSurfaceVariant, fontSize: 14),
+              style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 14),
             ),
             const SizedBox(height: 40),
 
             // Details Section
-            _buildDetailSection('TENANT INFORMATION', [
-              _buildDetailRow('Name', meter.tenantId),
-              _buildDetailRow('Submeter', meter.name),
-              _buildDetailRow('Location', meter.unit),
+            _buildDetailSection(colorScheme, 'TENANT INFORMATION', [
+              _buildDetailRow(colorScheme, 'Name', meter.tenantId),
+              _buildDetailRow(colorScheme, 'Submeter', meter.name),
+              _buildDetailRow(colorScheme, 'Location', meter.unit),
             ]),
             const SizedBox(height: 32),
 
-            _buildDetailSection('CONSUMPTION DETAILS', [
-              _buildDetailRow('Previous Reading', '${bill.previousReading ?? 0} kWh'),
-              _buildDetailRow('Current Reading', '${bill.currentReading ?? 0} kWh'),
-              _buildDetailRow('Total Usage', '${bill.kwh} kWh', isBold: true),
+            _buildDetailSection(colorScheme, 'CONSUMPTION DETAILS', [
+              _buildDetailRow(colorScheme, 'Previous Reading', '${bill.previousReading ?? 0} kWh'),
+              _buildDetailRow(colorScheme, 'Current Reading', '${bill.currentReading ?? 0} kWh'),
+              _buildDetailRow(colorScheme, 'Total Usage', '${bill.kwh} kWh', isBold: true),
             ]),
             const SizedBox(height: 32),
 
-            _buildDetailSection('PAYMENT SUMMARY', [
-              _buildDetailRow('Subtotal', currencyFormat.format(bill.amount)),
-              const Divider(height: 32, color: KurieColors.outlineVariant),
+            _buildDetailSection(colorScheme, 'PAYMENT SUMMARY', [
+              _buildDetailRow(colorScheme, 'Subtotal', currencyFormat.format(bill.amount)),
+              Divider(height: 32, color: colorScheme.outlineVariant),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('TOTAL AMOUNT', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                  Text('TOTAL AMOUNT', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: colorScheme.onSurface)),
                   Text(
                     currencyFormat.format(bill.amount),
-                    style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 24, color: KurieColors.primary),
+                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 24, color: colorScheme.primary),
                   ),
                 ],
               ),
@@ -131,8 +133,8 @@ class BillDetailsScreen extends StatelessWidget {
                 icon: const Icon(Icons.picture_as_pdf_rounded),
                 label: const Text('Download Statement (PDF)', style: TextStyle(fontWeight: FontWeight.w700)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: KurieColors.primary,
-                  foregroundColor: Colors.white,
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                 ),
               ),
@@ -143,25 +145,25 @@ class BillDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailSection(String title, List<Widget> children) {
+  Widget _buildDetailSection(ColorScheme colorScheme, String title, List<Widget> children) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
             letterSpacing: 1.0,
-            color: KurieColors.onSurfaceVariant,
+            color: colorScheme.onSurfaceVariant,
           ),
         ),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: KurieColors.surfaceContainerLowest,
-            border: Border.all(color: KurieColors.outlineVariant),
+            color: colorScheme.surfaceContainerLowest,
+            border: Border.all(color: colorScheme.outlineVariant),
             borderRadius: BorderRadius.circular(4),
           ),
           child: Column(children: children),
@@ -170,19 +172,19 @@ class BillDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(String label, String value, {bool isBold = false}) {
+  Widget _buildDetailRow(ColorScheme colorScheme, String label, String value, {bool isBold = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: KurieColors.onSurfaceVariant, fontSize: 14)),
+          Text(label, style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 14)),
           Text(
             value,
             style: TextStyle(
               fontWeight: isBold ? FontWeight.w800 : FontWeight.w600,
               fontSize: 14,
-              color: KurieColors.onSurface,
+              color: colorScheme.onSurface,
             ),
           ),
         ],

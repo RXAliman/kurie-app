@@ -4,7 +4,7 @@ import 'package:kurie/data/repositories/app_repository.dart';
 import 'package:kurie/data/services/auth_service.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import '../app/theme/kurie_colors.dart';
+
 
 /// Settings & Profile screen — matches Stitch "Settings & Profile" design.
 /// Features profile header, property details, notification toggles, and sync controls.
@@ -30,10 +30,15 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
   }
 
   Future<void> _loadAppVersion() async {
+    final repo = context.read<AppRepository>();
     final packageInfo = await PackageInfo.fromPlatform();
     if (mounted) {
       setState(() {
         _appVersion = packageInfo.version;
+        // Sync local state with repository theme
+        if (repo.themeMode == ThemeMode.light) _selectedTheme = 'Light';
+        if (repo.themeMode == ThemeMode.dark) _selectedTheme = 'Dark';
+        if (repo.themeMode == ThemeMode.system) _selectedTheme = 'System';
       });
     }
   }
@@ -60,7 +65,7 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: KurieColors.error),
+            style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
             child: const Text('Delete'),
           ),
         ],
@@ -87,8 +92,9 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: KurieColors.surface,
+      backgroundColor: colorScheme.surface,
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
         child: Column(
@@ -106,23 +112,23 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
                         width: 80,
                         height: 80,
                         decoration: BoxDecoration(
-                          color: KurieColors.surfaceContainerHigh,
+                          color: colorScheme.surfaceContainerHigh,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: KurieColors.outlineVariant,
+                            color: colorScheme.outlineVariant,
                             width: 2,
                           ),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.person_rounded,
                           size: 48,
-                          color: KurieColors.outline,
+                          color: colorScheme.outline,
                         ),
                       ),
                       Container(
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
-                          color: KurieColors.primary,
+                          color: colorScheme.primary,
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 2),
                         ),
@@ -137,19 +143,19 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
                   const SizedBox(height: 16),
                   Text(
                     _user?.displayName ?? 'User',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
-                      color: KurieColors.onSurface,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   Text(
                     _user?.email ?? 'No email',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 14,
-                      color: KurieColors.onSurfaceVariant,
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -187,10 +193,10 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
               children: [
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.dark_mode_outlined,
                       size: 20,
-                      color: KurieColors.primary,
+                      color: colorScheme.primary,
                     ),
                     const SizedBox(width: 12),
                     const Expanded(
@@ -210,7 +216,12 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
                             (t) => DropdownMenuItem(value: t, child: Text(t)),
                           )
                           .toList(),
-                      onChanged: (v) => setState(() => _selectedTheme = v!),
+                      onChanged: (v) {
+                        if (v != null) {
+                          setState(() => _selectedTheme = v);
+                          context.read<AppRepository>().setThemeMode(v);
+                        }
+                      },
                     ),
                   ],
                 ),
@@ -225,17 +236,17 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
               children: [
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.sync_rounded,
                       size: 20,
-                      color: KurieColors.primary,
+                      color: colorScheme.primary,
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'Last synced: 2 mins ago',
                             style: TextStyle(
                               fontSize: 14,
@@ -246,7 +257,7 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
                             'Local cache: 1.2 MB',
                             style: TextStyle(
                               fontSize: 12,
-                              color: KurieColors.onSurfaceVariant,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -274,9 +285,9 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
                         ),
                       );
                     },
-                    child: const Text(
+                    child: Text(
                       'Clear Local Cache',
-                      style: TextStyle(color: KurieColors.error),
+                      style: TextStyle(color: colorScheme.error),
                     ),
                   ),
                 ),
@@ -292,7 +303,7 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
                 _actionRow(
                   'Sign Out',
                   Icons.logout_rounded,
-                  KurieColors.onSurface,
+                  colorScheme.onSurface,
                   _onSignOut,
                 ),
                 const Padding(
@@ -302,7 +313,7 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
                 _actionRow(
                   'Delete Account',
                   Icons.delete_forever_rounded,
-                  KurieColors.error,
+                  colorScheme.error,
                   _onDeleteAccount,
                 ),
               ],
@@ -313,11 +324,11 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
             Center(
               child: Text(
                 'Kurie v$_appVersion',
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: KurieColors.outline,
+                  color: colorScheme.outline,
                 ),
               ),
             ),
@@ -330,11 +341,11 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
   Widget _sectionTitle(String title) {
     return Text(
       title,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w700,
         letterSpacing: 1.0,
-        color: KurieColors.onSurfaceVariant,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
     );
   }
@@ -344,8 +355,8 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: KurieColors.surfaceContainerHigh,
-        border: Border.all(color: KurieColors.outlineVariant),
+        color: Theme.of(context).colorScheme.surfaceContainerHigh,
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
@@ -366,8 +377,8 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
         Switch.adaptive(
           value: value,
           onChanged: onChanged,
-          activeTrackColor: KurieColors.primary.withAlpha(150),
-          activeThumbColor: KurieColors.primary,
+          activeTrackColor: Theme.of(context).colorScheme.primary.withAlpha(150),
+          activeThumbColor: Theme.of(context).colorScheme.primary,
         ),
       ],
     );

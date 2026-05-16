@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../app/theme/kurie_colors.dart';
+
 import '../data/models/reading.dart';
 import '../data/repositories/app_repository.dart';
 
@@ -25,6 +25,7 @@ class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final submeters = context.watch<AppRepository>().submeters;
     final selectedSubmeter = _selectedSubmeterId != null 
         ? submeters.firstWhere((s) => s.id == _selectedSubmeterId)
@@ -32,8 +33,9 @@ class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
     final lastReading = selectedSubmeter?.lastReading ?? '0';
 
     return Scaffold(
-      backgroundColor: KurieColors.surface,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
+        backgroundColor: colorScheme.surface,
         title: const Text('Log Meter Reading'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
@@ -47,22 +49,22 @@ class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
           children: [
             Text('Enter the current value from the analog or digital display.',
                 style: TextStyle(fontSize: 16, height: 24 / 16,
-                    color: KurieColors.onSurfaceVariant)),
+                    color: colorScheme.onSurfaceVariant)),
             const SizedBox(height: 8),
             // Info banner
             Container(
               width: double.infinity, padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: KurieColors.primaryFixed.withAlpha(40),
+                color: colorScheme.primaryContainer.withAlpha(40),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Row(children: [
-                Icon(Icons.info_outline_rounded, size: 18, color: KurieColors.primary),
+                Icon(Icons.info_outline_rounded, size: 18, color: colorScheme.primary),
                 const SizedBox(width: 8),
                 Expanded(child: Text(
                   'Last reading: $lastReading kWh.',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500,
-                      color: KurieColors.primary),
+                      color: colorScheme.primary),
                 )),
               ]),
             ),
@@ -71,23 +73,24 @@ class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
 
             // Select submeter
             Text('SUBMETER', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700,
-                letterSpacing: 1.0, color: KurieColors.onSurfaceVariant)),
+                letterSpacing: 1.0, color: colorScheme.onSurfaceVariant)),
             const SizedBox(height: 8),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
-                color: KurieColors.surfaceContainerLowest,
-                border: Border.all(color: KurieColors.outlineVariant),
+                color: colorScheme.surfaceContainerLowest,
+                border: Border.all(color: colorScheme.outlineVariant),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
+                  dropdownColor: colorScheme.surfaceContainerLowest,
                   value: _selectedSubmeterId,
-                  hint: Text('Select submeter', style: TextStyle(color: KurieColors.outline)),
+                  hint: Text('Select submeter', style: TextStyle(color: colorScheme.outline)),
                   isExpanded: true,
                   items: submeters
-                      .map((s) => DropdownMenuItem(value: s.id, child: Text(s.name)))
+                      .map((s) => DropdownMenuItem(value: s.id, child: Text(s.name, style: TextStyle(color: colorScheme.onSurface))))
                       .toList(),
                   onChanged: (v) => setState(() => _selectedSubmeterId = v),
                 ),
@@ -98,18 +101,18 @@ class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
             // Current Reading
             Text('CURRENT READING (kWh)', style: TextStyle(fontSize: 12,
                 fontWeight: FontWeight.w700, letterSpacing: 1.0,
-                color: KurieColors.onSurfaceVariant)),
+                color: colorScheme.onSurfaceVariant)),
             const SizedBox(height: 8),
             TextField(
               controller: _readingController,
               keyboardType: TextInputType.number,
               style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700,
-                  color: KurieColors.onSurface,
+                  color: colorScheme.onSurface,
                   fontFeatures: const [FontFeature.tabularFigures()]),
               decoration: InputDecoration(
                 hintText: '0',
                 hintStyle: TextStyle(fontSize: 32, fontWeight: FontWeight.w700,
-                    color: KurieColors.outlineVariant),
+                    color: colorScheme.outlineVariant),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
               ),
             ),
@@ -118,7 +121,7 @@ class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
             // Photo attachment zone
             Text('PHOTO EVIDENCE (OPTIONAL)', style: TextStyle(fontSize: 12,
                 fontWeight: FontWeight.w700, letterSpacing: 1.0,
-                color: KurieColors.onSurfaceVariant)),
+                color: colorScheme.onSurfaceVariant)),
             const SizedBox(height: 8),
             InkWell(
               onTap: () {},
@@ -126,19 +129,19 @@ class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
               child: Container(
                 width: double.infinity, height: 120,
                 decoration: BoxDecoration(
-                  color: KurieColors.surfaceContainer,
+                  color: colorScheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(6),
                   border: Border.all(
-                    color: KurieColors.outlineVariant,
+                    color: colorScheme.outlineVariant,
                     style: BorderStyle.solid,
                   ),
                 ),
                 child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Icon(Icons.add_a_photo_outlined, size: 32, color: KurieColors.outline),
+                  Icon(Icons.add_a_photo_outlined, size: 32, color: colorScheme.outline),
                   const SizedBox(height: 8),
                   Text('Tap to capture meter photo',
                       style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500,
-                          color: KurieColors.outline)),
+                          color: colorScheme.outline)),
                 ]),
               ),
             ),
@@ -185,7 +188,7 @@ class _LogMeterReadingScreenState extends State<LogMeterReadingScreen> {
             Center(
               child: Text(
                 'Timestamp will be captured automatically.',
-                style: TextStyle(fontSize: 12, color: KurieColors.outline),
+                style: TextStyle(fontSize: 12, color: colorScheme.outline),
               ),
             ),
           ],

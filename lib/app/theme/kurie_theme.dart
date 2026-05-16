@@ -8,41 +8,56 @@ class KurieTheme {
   static ThemeData get light {
     final colorScheme = ColorScheme(
       brightness: Brightness.light,
-      primary: KurieColors.primary,
-      onPrimary: KurieColors.onPrimary,
-      primaryContainer: KurieColors.primaryContainer,
-      onPrimaryContainer: KurieColors.onPrimaryContainer,
-      secondary: KurieColors.secondary,
-      onSecondary: KurieColors.onSecondary,
-      secondaryContainer: KurieColors.secondaryContainer,
-      onSecondaryContainer: KurieColors.onSecondaryContainer,
+      primary: KurieColors.primaryLight,
+      onPrimary: KurieColors.onPrimaryLight,
+      primaryContainer: KurieColors.primaryContainerLight,
+      onPrimaryContainer: KurieColors.onPrimaryContainerLight,
+      secondary: const Color(0xFF545F73),
+      onSecondary: Colors.white,
       tertiary: KurieColors.tertiary,
       onTertiary: KurieColors.onTertiary,
-      tertiaryContainer: KurieColors.tertiaryContainer,
-      onTertiaryContainer: KurieColors.onTertiaryContainer,
       error: KurieColors.error,
       onError: KurieColors.onError,
-      errorContainer: KurieColors.errorContainer,
-      onErrorContainer: KurieColors.onErrorContainer,
-      surface: KurieColors.surface,
-      onSurface: KurieColors.onSurface,
-      surfaceContainerHighest: KurieColors.surfaceContainerHighest,
-      outline: KurieColors.outline,
-      outlineVariant: KurieColors.outlineVariant,
-      inverseSurface: KurieColors.inverseSurface,
-      onInverseSurface: KurieColors.inverseOnSurface,
-      inversePrimary: KurieColors.inversePrimary,
-      surfaceTint: KurieColors.surfaceTint,
+      surface: KurieColors.surfaceLight,
+      onSurface: KurieColors.onSurfaceLight,
+      outline: KurieColors.outlineLight,
+      outlineVariant: KurieColors.outlineVariantLight,
     );
 
+    return _buildTheme(colorScheme, KurieColors.surfaceLight, KurieColors.surfaceContainerLowestLight);
+  }
+
+  static ThemeData get dark {
+    final colorScheme = ColorScheme(
+      brightness: Brightness.dark,
+      primary: KurieColors.primaryDark,
+      onPrimary: KurieColors.onPrimaryDark,
+      primaryContainer: KurieColors.primaryContainerDark,
+      onPrimaryContainer: KurieColors.onPrimaryContainerDark,
+      secondary: const Color(0xFFBEC8DC),
+      onSecondary: const Color(0xFF283141),
+      tertiary: KurieColors.tertiary,
+      onTertiary: KurieColors.onTertiary,
+      error: const Color(0xFFFFB4AB),
+      onError: const Color(0xFF690005),
+      surface: KurieColors.surfaceDark,
+      onSurface: KurieColors.onSurfaceDark,
+      outline: KurieColors.outlineDark,
+      outlineVariant: KurieColors.outlineVariantDark,
+    );
+
+    return _buildTheme(colorScheme, KurieColors.surfaceDark, KurieColors.surfaceContainerLowestDark);
+  }
+
+  static ThemeData _buildTheme(ColorScheme colorScheme, Color scaffoldBg, Color surfaceLowest) {
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
       fontFamily: 'Inter',
-      scaffoldBackgroundColor: KurieColors.surface,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: KurieColors.surface,
-        foregroundColor: KurieColors.onSurface,
+      scaffoldBackgroundColor: scaffoldBg,
+      appBarTheme: AppBarTheme(
+        backgroundColor: scaffoldBg,
+        foregroundColor: colorScheme.onSurface,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
@@ -50,23 +65,23 @@ class KurieTheme {
           fontFamily: 'Inter',
           fontSize: 18,
           fontWeight: FontWeight.w700,
-          color: KurieColors.onSurface,
+          color: colorScheme.onSurface,
           letterSpacing: -0.01,
         ),
       ),
       cardTheme: CardThemeData(
-        color: KurieColors.surfaceContainerLowest,
+        color: surfaceLowest,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(4),
-          side: const BorderSide(color: KurieColors.outlineVariant, width: 1),
+          side: BorderSide(color: colorScheme.outlineVariant, width: 1),
         ),
         margin: EdgeInsets.zero,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: KurieColors.primary,
-          foregroundColor: KurieColors.onPrimary,
+          backgroundColor: colorScheme.primary,
+          foregroundColor: colorScheme.onPrimary,
           minimumSize: const Size.fromHeight(48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(4),
@@ -81,12 +96,12 @@ class KurieTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: KurieColors.onSurface,
+          foregroundColor: colorScheme.onSurface,
           minimumSize: const Size.fromHeight(48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(4),
           ),
-          side: const BorderSide(color: KurieColors.outlineVariant),
+          side: BorderSide(color: colorScheme.outlineVariant),
           textStyle: const TextStyle(
             fontFamily: 'Inter',
             fontSize: 14,
@@ -96,67 +111,66 @@ class KurieTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: KurieColors.surfaceContainerLowest,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        fillColor: surfaceLowest,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4),
-          borderSide: const BorderSide(color: KurieColors.outlineVariant),
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4),
-          borderSide: const BorderSide(color: KurieColors.outlineVariant),
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4),
-          borderSide: const BorderSide(color: KurieColors.primary, width: 2),
+          borderSide: BorderSide(color: colorScheme.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4),
-          borderSide: const BorderSide(color: KurieColors.error),
+          borderSide: BorderSide(color: colorScheme.error),
         ),
-        labelStyle: const TextStyle(
+        labelStyle: TextStyle(
           fontFamily: 'Inter',
           fontSize: 14,
           fontWeight: FontWeight.w500,
-          color: KurieColors.onSurfaceVariant,
+          color: colorScheme.onSurfaceVariant,
         ),
-        hintStyle: const TextStyle(
+        hintStyle: TextStyle(
           fontFamily: 'Inter',
           fontSize: 16,
           fontWeight: FontWeight.w400,
-          color: KurieColors.outline,
+          color: colorScheme.outline,
         ),
       ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: KurieColors.surfaceContainerLowest,
-        selectedItemColor: KurieColors.primary,
-        unselectedItemColor: KurieColors.onSurfaceVariant,
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: surfaceLowest,
+        selectedItemColor: colorScheme.primary,
+        unselectedItemColor: colorScheme.onSurfaceVariant,
         type: BottomNavigationBarType.fixed,
-        selectedLabelStyle: TextStyle(
+        selectedLabelStyle: const TextStyle(
           fontFamily: 'Inter',
           fontSize: 12,
           fontWeight: FontWeight.w700,
         ),
-        unselectedLabelStyle: TextStyle(
+        unselectedLabelStyle: const TextStyle(
           fontFamily: 'Inter',
           fontSize: 12,
           fontWeight: FontWeight.w500,
         ),
       ),
-      dividerTheme: const DividerThemeData(
-        color: KurieColors.outlineVariant,
+      dividerTheme: DividerThemeData(
+        color: colorScheme.outlineVariant,
         thickness: 1,
         space: 0,
       ),
-      textTheme: const TextTheme(
+      textTheme: TextTheme(
         displayLarge: TextStyle(
           fontFamily: 'Inter',
           fontSize: 48,
           fontWeight: FontWeight.w700,
           height: 56 / 48,
           letterSpacing: -0.96,
-          color: KurieColors.onSurface,
+          color: colorScheme.onSurface,
         ),
         displayMedium: TextStyle(
           fontFamily: 'Inter',
@@ -164,7 +178,7 @@ class KurieTheme {
           fontWeight: FontWeight.w600,
           height: 48 / 40,
           letterSpacing: -0.8,
-          color: KurieColors.onSurface,
+          color: colorScheme.onSurface,
         ),
         headlineLarge: TextStyle(
           fontFamily: 'Inter',
@@ -172,44 +186,45 @@ class KurieTheme {
           fontWeight: FontWeight.w700,
           height: 40 / 32,
           letterSpacing: -0.32,
-          color: KurieColors.onSurface,
+          color: colorScheme.onSurface,
         ),
         headlineMedium: TextStyle(
           fontFamily: 'Inter',
           fontSize: 24,
           fontWeight: FontWeight.w600,
           height: 32 / 24,
-          color: KurieColors.onSurface,
+          color: colorScheme.onSurface,
         ),
         bodyLarge: TextStyle(
           fontFamily: 'Inter',
           fontSize: 18,
           fontWeight: FontWeight.w400,
           height: 28 / 18,
-          color: KurieColors.onSurface,
+          color: colorScheme.onSurface,
         ),
         bodyMedium: TextStyle(
           fontFamily: 'Inter',
           fontSize: 16,
           fontWeight: FontWeight.w400,
           height: 24 / 16,
-          color: KurieColors.onSurface,
+          color: colorScheme.onSurface,
         ),
         labelLarge: TextStyle(
           fontFamily: 'Inter',
           fontSize: 14,
           fontWeight: FontWeight.w700,
           height: 20 / 14,
-          color: KurieColors.onSurface,
+          color: colorScheme.onSurface,
         ),
         labelSmall: TextStyle(
           fontFamily: 'Inter',
           fontSize: 12,
           fontWeight: FontWeight.w500,
           height: 16 / 12,
-          color: KurieColors.onSurfaceVariant,
+          color: colorScheme.onSurfaceVariant,
         ),
       ),
     );
   }
+
 }

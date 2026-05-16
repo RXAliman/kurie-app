@@ -16,6 +16,7 @@ class DatabaseService {
   static const String billsBoxName = 'bills';
   static const String notificationsBoxName = 'notifications';
   static const String disputesBoxName = 'disputes';
+  static const String settingsBoxName = 'settings';
 
   Future<void> init() async {
     await Hive.initFlutter();
@@ -33,6 +34,7 @@ class DatabaseService {
     await Hive.openBox<Bill>(billsBoxName);
     await Hive.openBox<NotificationItem>(notificationsBoxName);
     await Hive.openBox<Dispute>(disputesBoxName);
+    await Hive.openBox(settingsBoxName);
   }
 
   Box<Submeter> get submetersBox => Hive.box<Submeter>(submetersBoxName);
@@ -41,6 +43,7 @@ class DatabaseService {
   Box<NotificationItem> get notificationsBox =>
       Hive.box<NotificationItem>(notificationsBoxName);
   Box<Dispute> get disputesBox => Hive.box<Dispute>(disputesBoxName);
+  Box get settingsBox => Hive.box(settingsBoxName);
 
   Future<void> clearAllData() async {
     await submetersBox.clear();
@@ -48,6 +51,7 @@ class DatabaseService {
     await billsBox.clear();
     await notificationsBox.clear();
     await disputesBox.clear();
+    await settingsBox.clear();
   }
 
   // Helper methods

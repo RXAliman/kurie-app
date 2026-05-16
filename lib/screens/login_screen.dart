@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../app/theme/kurie_colors.dart';
+
 import '../data/services/auth_service.dart';
 
 /// Login screen — two-step: Email entry then Password entry.
@@ -98,20 +98,22 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: KurieColors.surface,
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
           switchInCurve: Curves.easeOut,
           switchOutCurve: Curves.easeIn,
-          child: _isPasswordStep ? _buildPasswordStep() : _buildEmailStep(),
+          child: _isPasswordStep ? _buildPasswordStep(colorScheme) : _buildEmailStep(colorScheme),
         ),
       ),
     );
   }
 
-  Widget _buildEmailStep() {
+  Widget _buildEmailStep(ColorScheme colorScheme) {
     return SingleChildScrollView(
       key: const ValueKey('email'),
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -120,35 +122,35 @@ class _LoginScreenState extends State<LoginScreen> {
         children: [
           const SizedBox(height: 80),
           // Header
-          const Text(
+          Text(
             'Log in',
             style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 32,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.64,
-              color: KurieColors.onSurface,
+              color: colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Enter your email to log in and access your meter data.',
             style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 16,
-              color: KurieColors.onSurfaceVariant,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 32),
           // Email field
-          const Text(
+          Text(
             'EMAIL',
             style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 12,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.0,
-              color: KurieColors.onSurfaceVariant,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 8),
@@ -179,7 +181,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   'or',
                   style: TextStyle(
                     fontSize: 14,
-                    color: KurieColors.onSurfaceVariant,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -192,17 +194,17 @@ class _LoginScreenState extends State<LoginScreen> {
             width: double.infinity,
             height: 48,
             child: _isLoading
-                ? const Center(
+                ? Center(
                     child: CircularProgressIndicator(
-                      color: KurieColors.secondary,
+                      color: colorScheme.secondary,
                     ),
                   )
                 : ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: KurieColors.primary,
-                      backgroundColor: Colors.white,
-                      side: const BorderSide(
-                        color: KurieColors.outlineVariant,
+                      foregroundColor: colorScheme.primary,
+                      backgroundColor: colorScheme.surface,
+                      side: BorderSide(
+                        color: colorScheme.outlineVariant,
                         width: 1,
                       ),
                     ),
@@ -219,12 +221,12 @@ class _LoginScreenState extends State<LoginScreen> {
           Center(
             child: TextButton(
               onPressed: () => Navigator.of(context).pushNamed('/register'),
-              child: const Text(
+              child: Text(
                 'Don\'t have an account? Tap here.',
                 style: TextStyle(
                   fontFamily: 'Inter',
                   fontWeight: FontWeight.w600,
-                  color: KurieColors.primary,
+                  color: colorScheme.primary,
                 ),
               ),
             ),
@@ -234,7 +236,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildPasswordStep() {
+  Widget _buildPasswordStep(ColorScheme colorScheme) {
     return SingleChildScrollView(
       key: const ValueKey('password'),
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -247,7 +249,7 @@ class _LoginScreenState extends State<LoginScreen> {
             icon: const Icon(Icons.arrow_back_rounded),
             onPressed: _onBackToEmail,
             style: IconButton.styleFrom(
-              backgroundColor: KurieColors.surfaceContainerHigh,
+              backgroundColor: colorScheme.surfaceContainerHigh,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -255,37 +257,37 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           const SizedBox(height: 40),
           // Header
-          const Text(
+          Text(
             'Enter your password',
             style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 24,
               fontWeight: FontWeight.w600,
               height: 32 / 24,
-              color: KurieColors.onSurface,
+              color: colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Sign-in with ${_emailController.text.trim()}',
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 16,
               fontWeight: FontWeight.w400,
               height: 24 / 16,
-              color: KurieColors.onSurfaceVariant,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 32),
           // Password field
-          const Text(
+          Text(
             'PASSWORD',
             style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 12,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.0,
-              color: KurieColors.onSurfaceVariant,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 8),
@@ -299,7 +301,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   _obscurePassword
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
-                  color: KurieColors.onSurfaceVariant,
+                  color: colorScheme.onSurfaceVariant,
                 ),
                 onPressed: () =>
                     setState(() => _obscurePassword = !_obscurePassword),

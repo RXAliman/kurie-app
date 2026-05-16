@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/submeter.dart';
 import '../models/reading.dart';
@@ -16,11 +16,14 @@ class AppRepository extends ChangeNotifier {
   List<Dispute> _disputes = [];
   List<Bill> _bills = [];
 
+  ThemeMode _themeMode = ThemeMode.system;
+
   List<Submeter> get submeters => _submeters;
   List<NotificationItem> get notifications => _notifications;
   List<Reading> get readings => _readings;
   List<Dispute> get disputes => _disputes;
   List<Bill> get bills => _bills;
+  ThemeMode get themeMode => _themeMode;
 
   Future<void> init() async {
     await _db.init();
@@ -33,6 +36,27 @@ class AppRepository extends ChangeNotifier {
     _readings = _db.getAllReadings();
     _disputes = _db.getAllDisputes();
     _bills = _db.getAllBills();
+
+    final themeStr = _db.settingsBox.get('theme', defaultValue: 'System');
+    _themeMode = _parseThemeMode(themeStr);
+
+    notifyListeners();
+  }
+
+  ThemeMode _parseThemeMode(String themeStr) {
+    switch (themeStr) {
+      case 'Light':
+        return ThemeMode.light;
+      case 'Dark':
+        return ThemeMode.dark;
+      default:
+        return ThemeMode.system;
+    }
+  }
+
+  Future<void> setThemeMode(String themeStr) async {
+    await _db.settingsBox.put('theme', themeStr);
+    _themeMode = _parseThemeMode(themeStr);
     notifyListeners();
   }
 

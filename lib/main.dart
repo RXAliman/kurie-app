@@ -45,12 +45,16 @@ class KurieApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Kurie',
-      debugShowCheckedModeBanner: false,
-      theme: KurieTheme.light,
-      initialRoute: initialRoute,
-      routes: {
+    return Consumer<AppRepository>(
+      builder: (context, repository, child) {
+        return MaterialApp(
+          title: 'Kurie',
+          debugShowCheckedModeBanner: false,
+          theme: KurieTheme.light,
+          darkTheme: KurieTheme.dark,
+          themeMode: repository.themeMode,
+          initialRoute: initialRoute,
+          routes: {
         '/onboarding': (context) => const OnboardingScreen(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
@@ -65,6 +69,8 @@ class KurieApp extends StatelessWidget {
           final billId = ModalRoute.of(context)!.settings.arguments as String;
           return BillDetailsScreen(billId: billId);
         },
+      },
+        );
       },
     );
   }

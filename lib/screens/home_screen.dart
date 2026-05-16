@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../app/theme/kurie_colors.dart';
+
 import 'admin_dashboard_screen.dart';
 import 'ledger_history_screen.dart';
 import 'settings_profile_screen.dart';
@@ -24,19 +24,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: KurieColors.surface,
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: IndexedStack(index: _currentIndex, children: _screens),
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: KurieColors.surfaceContainerLowest,
+          color: colorScheme.surfaceContainerLowest,
           border: Border(
-            top: BorderSide(color: KurieColors.outlineVariant, width: 1),
+            top: BorderSide(color: colorScheme.outlineVariant, width: 1),
           ),
         ),
         child: BottomNavigationBar(
+          backgroundColor: colorScheme.surfaceContainerLowest,
+          selectedItemColor: colorScheme.primary,
+          unselectedItemColor: colorScheme.onSurfaceVariant,
           currentIndex: _currentIndex,
           onTap: (i) => setState(() => _currentIndex = i),
           items: const [

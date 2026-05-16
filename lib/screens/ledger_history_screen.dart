@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../app/theme/kurie_colors.dart';
+
 import '../data/models/submeter.dart';
 import '../data/models/reading.dart';
 import '../data/models/bill.dart';
@@ -20,6 +20,7 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final readings = context.watch<AppRepository>().readings;
     final bills = context.watch<AppRepository>().bills;
     final submeters = context.watch<AppRepository>().submeters;
@@ -40,19 +41,19 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Ledger History',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.24,
-              color: KurieColors.onSurface,
+              color: colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             'Past readings and finalized billing cycles.',
-            style: TextStyle(fontSize: 14, color: KurieColors.onSurfaceVariant),
+            style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: 20),
 
@@ -61,13 +62,13 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _filterChip('All'),
+                _filterChip(colorScheme, 'All'),
                 const SizedBox(width: 8),
-                _filterChip('Readings'),
+                _filterChip(colorScheme, 'Readings'),
                 const SizedBox(width: 8),
-                _filterChip('Bills'),
+                _filterChip(colorScheme, 'Bills'),
                 const SizedBox(width: 8),
-                _filterChip('Alerts'),
+                _filterChip(colorScheme, 'Alerts'),
               ],
             ),
           ),
@@ -78,15 +79,15 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: KurieColors.surfaceContainerLow,
+                color: colorScheme.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: KurieColors.outlineVariant),
+                border: Border.all(color: colorScheme.outlineVariant),
               ),
-              child: const Center(
+              child: Center(
                 child: Text(
                   'No entries found for this filter.',
                   style: TextStyle(
-                    color: KurieColors.onSurfaceVariant,
+                    color: colorScheme.onSurfaceVariant,
                     fontSize: 13,
                   ),
                 ),
@@ -101,8 +102,9 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
                 );
 
                 return _ledgerEntry(
+                  colorScheme: colorScheme,
                   icon: Icons.electric_meter_rounded,
-                  iconColor: KurieColors.onSurfaceVariant,
+                  iconColor: colorScheme.onSurfaceVariant,
                   title: 'Meter Reading',
                   subtitle: '${meter?.name ?? 'Unknown Meter'} — ${item.value} kWh',
                   amount: null,
@@ -116,8 +118,9 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
                 );
 
                 return _ledgerEntry(
+                  colorScheme: colorScheme,
                   icon: Icons.receipt_long_rounded,
-                  iconColor: KurieColors.primary,
+                  iconColor: colorScheme.primary,
                   title: 'Monthly Bill',
                   subtitle: '${meter?.name ?? 'Unknown'} — ${bill.month}',
                   amount: 'P${bill.amount.toStringAsFixed(2)}',
@@ -131,7 +134,7 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
     );
   }
 
-  Widget _filterChip(String label) {
+  Widget _filterChip(ColorScheme colorScheme, String label) {
     final selected = _selectedFilter == label;
     return GestureDetector(
       onTap: () => setState(() => _selectedFilter = label),
@@ -139,11 +142,11 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: selected
-              ? KurieColors.primary
-              : KurieColors.surfaceContainerLowest,
+              ? colorScheme.primary
+              : colorScheme.surfaceContainerLowest,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected ? KurieColors.primary : KurieColors.outlineVariant,
+            color: selected ? colorScheme.primary : colorScheme.outlineVariant,
           ),
         ),
         child: Text(
@@ -152,8 +155,8 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
             fontSize: 13,
             fontWeight: FontWeight.w600,
             color: selected
-                ? KurieColors.onPrimary
-                : KurieColors.onSurfaceVariant,
+                ? colorScheme.onPrimary
+                : colorScheme.onSurfaceVariant,
           ),
         ),
       ),
@@ -161,6 +164,7 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
   }
 
   Widget _ledgerEntry({
+    required ColorScheme colorScheme,
     required IconData icon,
     required Color iconColor,
     required String title,
@@ -178,11 +182,11 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isAlert ? const Color(0xFFFFF8EB) : KurieColors.surfaceContainerLowest,
+            color: isAlert ? colorScheme.tertiaryContainer.withAlpha(40) : colorScheme.surfaceContainerLowest,
             border: Border.all(
               color: isAlert
-                  ? KurieColors.tertiaryContainer.withAlpha(120)
-                  : KurieColors.outlineVariant,
+                  ? colorScheme.tertiaryContainer.withAlpha(120)
+                  : colorScheme.outlineVariant,
             ),
             borderRadius: BorderRadius.circular(4),
           ),
@@ -207,15 +211,15 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: isAlert ? KurieColors.tertiary : KurieColors.onSurface,
+                        color: isAlert ? colorScheme.tertiary : colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: KurieColors.onSurfaceVariant,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -227,16 +231,16 @@ class _LedgerHistoryScreenState extends State<LedgerHistoryScreen> {
                   if (amount != null)
                     Text(
                       amount,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: KurieColors.onSurface,
-                        fontFeatures: [FontFeature.tabularFigures()],
+                        color: colorScheme.onSurface,
+                        fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
                   Text(
                     date,
-                    style: const TextStyle(fontSize: 11, color: KurieColors.outline),
+                    style: TextStyle(fontSize: 11, color: colorScheme.outline),
                   ),
                 ],
               ),
