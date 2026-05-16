@@ -201,7 +201,7 @@ class AppRepository extends ChangeNotifier {
   Future<void> performManualSync() async {
     _syncStatus = SyncStatus.syncing;
     notifyListeners();
-    
+
     try {
       await uploadLocalData();
       await syncWithCloud();
@@ -209,6 +209,12 @@ class AppRepository extends ChangeNotifier {
       _syncStatus = SyncStatus.offline;
       notifyListeners();
     }
+  }
+
+  Future<void> deleteAccountData() async {
+    await _sync.deleteAllUserData();
+    await _db.clearAllData();
+    _loadData();
   }
 
   void _loadData() {
@@ -378,10 +384,6 @@ class AppRepository extends ChangeNotifier {
     _loadData();
   }
 
-  Future<void> clearAllData() async {
-    await _db.clearAllData();
-    _loadData();
-  }
 
   Future<void> updateBillingConfig({
     double? totalBill,

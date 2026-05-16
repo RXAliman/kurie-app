@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../data/services/auth_service.dart';
+import 'package:provider/provider.dart';
+import '../data/repositories/app_repository.dart';
 
 /// Login screen — two-step: Email entry then Password entry.
 /// Matches Stitch "Login: Email Step" and "Login: Password Step" designs.
@@ -44,9 +46,17 @@ class _LoginScreenState extends State<LoginScreen> {
         password,
       );
       if (mounted) {
-        setState(() => _isLoading = false);
         if (userCredential != null) {
-          Navigator.of(context).pushReplacementNamed('/home');
+          // Sync data immediately after login
+          final repo = context.read<AppRepository>();
+          await repo.syncWithCloud();
+          
+          if (mounted) {
+            setState(() => _isLoading = false);
+            Navigator.of(context).pushReplacementNamed('/home');
+          }
+        } else {
+          setState(() => _isLoading = false);
         }
       }
     } on FirebaseAuthException catch (e) {
@@ -83,10 +93,16 @@ class _LoginScreenState extends State<LoginScreen> {
     final userCredential = await AuthService().signInWithGoogle();
 
     if (mounted) {
-      setState(() => _isLoading = false);
       if (userCredential != null) {
-        Navigator.of(context).pushReplacementNamed('/home');
+        final repo = context.read<AppRepository>();
+        await repo.syncWithCloud();
+        
+        if (mounted) {
+          setState(() => _isLoading = false);
+          Navigator.of(context).pushReplacementNamed('/home');
+        }
       } else {
+        setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Google sign-in failed or was canceled.'),

@@ -5,7 +5,6 @@ import 'package:kurie/data/services/auth_service.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-
 /// Settings & Profile screen — matches Stitch "Settings & Profile" design.
 /// Features profile header, property details, notification toggles, and sync controls.
 class SettingsProfileScreen extends StatefulWidget {
@@ -70,27 +69,30 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
             child: const Text('Delete'),
           ),
         ],
       ),
     );
 
-    if (confirmed == true) {
-      try {
-        await AuthService().deleteAccount();
-        if (mounted) {
-          Navigator.of(
-            context,
-          ).pushNamedAndRemoveUntil('/login', (route) => false);
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error: $e')));
-        }
+    if (confirmed != true || !mounted) return;
+    try {
+      final appRepo = context.read<AppRepository>();
+      await appRepo.deleteAccountData();
+      await AuthService().deleteAccount();
+      if (mounted) {
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/login', (route) => false);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -173,16 +175,12 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
             const SizedBox(height: 8),
             _configGroup(
               children: [
-                _toggleRow(
-                  'Reading Reminders',
-                  _readingReminders,
-                  (v) {
-                    setState(() => _readingReminders = v);
-                    context
-                        .read<AppRepository>()
-                        .updateReminderSettings(enabled: v);
-                  },
-                ),
+                _toggleRow('Reading Reminders', _readingReminders, (v) {
+                  setState(() => _readingReminders = v);
+                  context.read<AppRepository>().updateReminderSettings(
+                    enabled: v,
+                  );
+                }),
                 if (_readingReminders) ...[
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 8),
@@ -194,9 +192,9 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
                     ['Monthly', 'Weekly', 'Daily'],
                     (v) {
                       setState(() => _reminderFrequency = v!);
-                      context
-                          .read<AppRepository>()
-                          .updateReminderSettings(frequency: v);
+                      context.read<AppRepository>().updateReminderSettings(
+                        frequency: v,
+                      );
                     },
                   ),
                   if (_reminderFrequency == 'Monthly') ...[
@@ -211,9 +209,9 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
                       (v) {
                         final day = int.parse(v!);
                         setState(() => _reminderDay = day);
-                        context
-                            .read<AppRepository>()
-                            .updateReminderSettings(day: day);
+                        context.read<AppRepository>().updateReminderSettings(
+                          day: day,
+                        );
                       },
                     ),
                   ],
@@ -265,7 +263,7 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
             ),
             const SizedBox(height: 24),
 
-             // Data & Sync
+            // Data & Sync
             _sectionTitle('DATA & SYNC'),
             const SizedBox(height: 8),
             Consumer<AppRepository>(
@@ -273,7 +271,7 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
                 final lastSyncedStr = repo.lastSynced != null
                     ? '${DateTime.now().difference(repo.lastSynced!).inMinutes} mins ago'
                     : 'Never';
-                
+
                 return _configGroup(
                   children: [
                     Row(
@@ -339,24 +337,6 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
                                 ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: TextButton(
-                        onPressed: () {
-                          repo.clearAllData();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Database cleared successfully'),
-                            ),
-                          );
-                        },
-                        child: Text(
-                          'Clear Local Cache',
-                          style: TextStyle(color: colorScheme.error),
-                        ),
-                      ),
                     ),
                   ],
                 );
@@ -446,7 +426,9 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
         Switch.adaptive(
           value: value,
           onChanged: onChanged,
-          activeTrackColor: Theme.of(context).colorScheme.primary.withAlpha(150),
+          activeTrackColor: Theme.of(
+            context,
+          ).colorScheme.primary.withAlpha(150),
           activeThumbColor: Theme.of(context).colorScheme.primary,
         ),
       ],
@@ -481,9 +463,7 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
             color: colorScheme.primary,
           ),
           items: options
-              .map(
-                (t) => DropdownMenuItem(value: t, child: Text(t)),
-              )
+              .map((t) => DropdownMenuItem(value: t, child: Text(t)))
               .toList(),
           onChanged: onChanged,
         ),

@@ -76,4 +76,29 @@ class FirestoreSyncService {
       'notifications': notificationsSnap.docs.map((d) => NotificationItem.fromMap(d.data() as Map<String, dynamic>)).toList(),
     };
   }
+
+  // Delete all data associated with the user
+  Future<void> deleteAllUserData() async {
+    if (uid == null) return;
+
+    final batch = _firestore.batch();
+
+    // Helper to add deletes to batch
+    Future<void> addCollectionToBatch(CollectionReference col) async {
+      final snap = await col.get();
+      for (final doc in snap.docs) {
+        batch.delete(doc.reference);
+      }
+    }
+
+    await addCollectionToBatch(_submetersCol);
+    await addCollectionToBatch(_readingsCol);
+    await addCollectionToBatch(_billsCol);
+    await addCollectionToBatch(_notificationsCol);
+
+    // Delete root user doc (contains settings)
+    batch.delete(_userDoc);
+
+    await batch.commit();
+  }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../data/services/auth_service.dart';
+import 'package:provider/provider.dart';
+import '../data/repositories/app_repository.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -40,9 +42,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       if (mounted) {
-        setState(() => _isLoading = false);
         if (userCredential != null) {
-          Navigator.of(context).pushReplacementNamed('/home');
+          // Sync data immediately after registration
+          final repo = context.read<AppRepository>();
+          await repo.syncWithCloud();
+          
+          if (mounted) {
+            setState(() => _isLoading = false);
+            Navigator.of(context).pushReplacementNamed('/home');
+          }
+        } else {
+          setState(() => _isLoading = false);
         }
       }
     } catch (e) {

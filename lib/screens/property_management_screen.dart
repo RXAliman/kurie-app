@@ -8,7 +8,8 @@ class PropertyManagementScreen extends StatefulWidget {
   const PropertyManagementScreen({super.key});
 
   @override
-  State<PropertyManagementScreen> createState() => _PropertyManagementScreenState();
+  State<PropertyManagementScreen> createState() =>
+      _PropertyManagementScreenState();
 }
 
 class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
@@ -36,12 +37,12 @@ class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final allSubmeters = context.watch<AppRepository>().submeters;
-    
+
     // Filter logic
     final filteredSubmeters = allSubmeters.where((m) {
       final query = _searchController.text.toLowerCase();
-      return m.unit.toLowerCase().contains(query) || 
-             m.tenantId.toLowerCase().contains(query);
+      return m.unit.toLowerCase().contains(query) ||
+          m.tenantId.toLowerCase().contains(query);
     }).toList();
 
     // Pagination logic
@@ -54,7 +55,7 @@ class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        title: const Text('Property Management'),
+        title: const Text('Submeter Management'),
         backgroundColor: colorScheme.surface,
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -79,7 +80,7 @@ class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'My Property',
+                  'Submeters',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
@@ -97,7 +98,7 @@ class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
               ],
             ),
           ),
-          
+
           // Search Bar (Only if 5 or more total submeters)
           if (allSubmeters.length >= 5)
             Padding(
@@ -118,7 +119,7 @@ class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
                 ),
               ),
             ),
-          
+
           if (allSubmeters.length >= 5) const SizedBox(height: 20),
 
           // List
@@ -158,7 +159,11 @@ class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
                             const SizedBox(height: 8),
                             Row(
                               children: [
-                                Icon(Icons.history_rounded, size: 14, color: colorScheme.onSurfaceVariant),
+                                Icon(
+                                  Icons.history_rounded,
+                                  size: 14,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
                                 const SizedBox(width: 6),
                                 Text(
                                   'Last Reading: ${meter.lastReading} kWh',
@@ -177,16 +182,26 @@ class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => SubmeterDetailsScreen(submeterId: meter.id),
+                                      builder: (context) =>
+                                          SubmeterDetailsScreen(
+                                            submeterId: meter.id,
+                                          ),
                                     ),
                                   );
                                 },
                                 style: OutlinedButton.styleFrom(
                                   side: BorderSide(color: colorScheme.primary),
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
                                 ),
-                                child: const Text('Manage Unit', style: TextStyle(fontWeight: FontWeight.bold)),
+                                child: const Text(
+                                  'Manage Unit',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
                               ),
                             ),
                           ],
@@ -202,20 +217,25 @@ class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
               decoration: BoxDecoration(
                 color: colorScheme.surface,
-                border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
+                border: Border(
+                  top: BorderSide(color: colorScheme.outlineVariant),
+                ),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Text(
                     'Page ${_currentPage + 1} of $totalPages',
-                    style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                   const SizedBox(width: 4),
                   IconButton(
                     icon: const Icon(Icons.chevron_left_rounded, size: 20),
-                    onPressed: _currentPage > 0 
-                        ? () => setState(() => _currentPage--) 
+                    onPressed: _currentPage > 0
+                        ? () => setState(() => _currentPage--)
                         : null,
                     visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
@@ -223,8 +243,8 @@ class _PropertyManagementScreenState extends State<PropertyManagementScreen> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.chevron_right_rounded, size: 20),
-                    onPressed: _currentPage < totalPages - 1 
-                        ? () => setState(() => _currentPage++) 
+                    onPressed: _currentPage < totalPages - 1
+                        ? () => setState(() => _currentPage++)
                         : null,
                     visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
