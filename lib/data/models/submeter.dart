@@ -26,4 +26,24 @@ class Submeter extends HiveObject {
     required this.lastReading,
     required this.status,
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'unit': unit,
+      'tenantId': tenantId,
+      'lastReading': lastReading,
+      'status': status,
+    };
+  }
+
+  factory Submeter.fromMap(Map<String, dynamic> map) {
+    return Submeter(
+      id: map['id'] ?? '',
+      unit: map['unit'] ?? '',
+      tenantId: map['tenantId'] ?? '',
+      lastReading: map['lastReading'] ?? '',
+      status: map['status'] ?? 'Active',
+    );
+  }
 }

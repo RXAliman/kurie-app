@@ -8,7 +8,7 @@ import '../data/services/pdf_service.dart';
 import 'package:printing/printing.dart';
 
 /// Admin Dashboard — matches Stitch "Admin Dashboard" screen.
-/// Shows total sub-user contributions, trend alerts, and active submeters.
+/// Shows total sub-user contributions and active submeters.
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
 
@@ -20,7 +20,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final submeters = context.watch<AppRepository>().submeters;
     final bills = context.watch<AppRepository>().bills;
 
     return SingleChildScrollView(
@@ -46,20 +45,44 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      _syncDot(colorScheme),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Synced • just now',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
+                  Consumer<AppRepository>(
+                    builder: (context, repo, child) {
+                      String statusText;
+                      Color statusColor;
+
+                      switch (repo.syncStatus) {
+                        case SyncStatus.syncing:
+                          statusText = 'Syncing...';
+                          statusColor = Colors.orange;
+                          break;
+                        case SyncStatus.offline:
+                          statusText = 'Offline';
+                          statusColor = Colors.grey;
+                          break;
+                        case SyncStatus.synced:
+                          statusText = repo.lastSynced != null
+                              ? 'Synced • ${DateFormat('h:mm a').format(repo.lastSynced!)}'
+                              : 'Synced • just now';
+                          statusColor = colorScheme.primary;
+                          break;
+                      }
+
+                      return Row(
+                        children: [
+                          _syncDot(statusColor),
+                          const SizedBox(width: 6),
+                          Text(
+                            statusText,
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ],
               ),
@@ -81,10 +104,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           // Total Sub-user Contributions card
           _buildContributionsCard(context, colorScheme, bills),
           const SizedBox(height: 16),
-
-          // Trend Alert
-          if (submeters.isNotEmpty) _buildTrendAlert(colorScheme),
-          if (submeters.isNotEmpty) const SizedBox(height: 24),
 
           // Quick Actions
           Text(
@@ -112,7 +131,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 child: _buildActionCard(
                   colorScheme: colorScheme,
                   icon: Icons.home_work_rounded,
-                  label: 'Property',
+                  label: 'Submeters',
                   onTap: () =>
                       Navigator.of(context).pushNamed('/property_mgmt'),
                 ),
@@ -122,7 +141,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 child: _buildActionCard(
                   colorScheme: colorScheme,
                   icon: Icons.summarize_rounded,
-                  label: 'Generate Summary',
+                  label: 'Print Readings',
                   onTap: () async {
                     final appRepo = context.read<AppRepository>();
                     if (appRepo.bills.isEmpty) {
@@ -165,7 +184,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _syncDot(ColorScheme colorScheme) {
+  Widget _syncDot(Color color) {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.5, end: 1.0),
       duration: const Duration(milliseconds: 1200),
@@ -175,7 +194,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           height: 8,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: colorScheme.primary.withAlpha((value * 255).toInt()),
+            color: color.withAlpha((value * 255).toInt()),
           ),
         );
       },
@@ -194,7 +213,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final totalUnpaid = bills
         .where((b) => b.status == 'Pending')
         .fold<double>(0, (sum, bill) => sum + bill.amount);
-        
+
     final currencyFormat = NumberFormat.currency(symbol: '₱', decimalDigits: 2);
 
     return Container(
@@ -278,10 +297,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             Container(
               width: 8,
               height: 8,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-              ),
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             ),
             const SizedBox(width: 6),
             Text(
@@ -308,56 +324,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildTrendAlert(ColorScheme colorScheme) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            Icons.trending_up_rounded,
-            size: 20,
-            color: colorScheme.tertiary,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Trend Alert',
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: colorScheme.tertiary,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Real-time trends will appear here as you log more readings over time.',
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    height: 20 / 14,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 

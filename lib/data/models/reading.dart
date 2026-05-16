@@ -26,4 +26,24 @@ class Reading extends HiveObject {
     required this.timestamp,
     this.balance = 0.0,
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'submeterId': submeterId,
+      'value': value,
+      'timestamp': timestamp.toIso8601String(),
+      'balance': balance,
+    };
+  }
+
+  factory Reading.fromMap(Map<String, dynamic> map) {
+    return Reading(
+      id: map['id'] ?? '',
+      submeterId: map['submeterId'] ?? '',
+      value: (map['value'] ?? 0.0).toDouble(),
+      timestamp: DateTime.parse(map['timestamp']),
+      balance: (map['balance'] ?? 0.0).toDouble(),
+    );
+  }
 }

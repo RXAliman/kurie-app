@@ -265,69 +265,102 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Data & Sync
+             // Data & Sync
             _sectionTitle('DATA & SYNC'),
             const SizedBox(height: 8),
-            _configGroup(
-              children: [
-                Row(
+            Consumer<AppRepository>(
+              builder: (context, repo, child) {
+                final lastSyncedStr = repo.lastSynced != null
+                    ? '${DateTime.now().difference(repo.lastSynced!).inMinutes} mins ago'
+                    : 'Never';
+                
+                return _configGroup(
                   children: [
-                    Icon(
-                      Icons.sync_rounded,
-                      size: 20,
-                      color: colorScheme.primary,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Last synced: 2 mins ago',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.sync_rounded,
+                          size: 20,
+                          color: colorScheme.primary,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Last synced: $lastSyncedStr',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                'Cloud database connected',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
                           ),
-                          Text(
-                            'Local cache: 1.2 MB',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
+                        ),
+                        ElevatedButton(
+                          onPressed: repo.syncStatus == SyncStatus.syncing
+                              ? null
+                              : () async {
+                                  await repo.performManualSync();
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Sync complete!'),
+                                      ),
+                                    );
+                                  }
+                                },
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            minimumSize: const Size(0, 32),
                           ),
-                        ],
-                      ),
+                          child: repo.syncStatus == SyncStatus.syncing
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                              : const Text(
+                                  'Sync',
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                        ),
+                      ],
                     ),
-                    ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        minimumSize: const Size(0, 32),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: TextButton(
+                        onPressed: () {
+                          repo.clearAllData();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Database cleared successfully'),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          'Clear Local Cache',
+                          style: TextStyle(color: colorScheme.error),
+                        ),
                       ),
-                      child: const Text('Sync', style: TextStyle(fontSize: 12)),
                     ),
                   ],
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: TextButton(
-                    onPressed: () {
-                      context.read<AppRepository>().clearAllData();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Database cleared successfully'),
-                        ),
-                      );
-                    },
-                    child: Text(
-                      'Clear Local Cache',
-                      style: TextStyle(color: colorScheme.error),
-                    ),
-                  ),
-                ),
-              ],
+                );
+              },
             ),
             const SizedBox(height: 32),
 

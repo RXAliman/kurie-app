@@ -34,4 +34,28 @@ class NotificationItem extends HiveObject {
     this.isRead = false,
     this.isUrgent = false,
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'type': type,
+      'timestamp': timestamp.toIso8601String(),
+      'isRead': isRead,
+      'isUrgent': isUrgent,
+    };
+  }
+
+  factory NotificationItem.fromMap(Map<String, dynamic> map) {
+    return NotificationItem(
+      id: map['id'] ?? '',
+      title: map['title'] ?? '',
+      description: map['description'] ?? '',
+      type: map['type'] ?? 'billing',
+      timestamp: DateTime.parse(map['timestamp']),
+      isRead: map['isRead'] ?? false,
+      isUrgent: map['isUrgent'] ?? false,
+    );
+  }
 }

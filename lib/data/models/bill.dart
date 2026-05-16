@@ -46,4 +46,34 @@ class Bill extends HiveObject {
     this.currentReading,
     this.balance = 0.0,
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'submeterId': submeterId,
+      'month': month,
+      'amount': amount,
+      'kwh': kwh,
+      'status': status,
+      'timestamp': timestamp.toIso8601String(),
+      'previousReading': previousReading,
+      'currentReading': currentReading,
+      'balance': balance,
+    };
+  }
+
+  factory Bill.fromMap(Map<String, dynamic> map) {
+    return Bill(
+      id: map['id'] ?? '',
+      submeterId: map['submeterId'] ?? '',
+      month: map['month'] ?? '',
+      amount: (map['amount'] ?? 0.0).toDouble(),
+      kwh: (map['kwh'] ?? 0.0).toDouble(),
+      status: map['status'] ?? 'Pending',
+      timestamp: DateTime.parse(map['timestamp']),
+      previousReading: (map['previousReading'] as num?)?.toDouble(),
+      currentReading: (map['currentReading'] as num?)?.toDouble(),
+      balance: (map['balance'] ?? 0.0).toDouble(),
+    );
+  }
 }

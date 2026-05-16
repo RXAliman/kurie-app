@@ -4,8 +4,6 @@ import '../models/reading.dart';
 import '../models/bill.dart';
 import '../models/notification_item.dart';
 
-import '../models/dispute.dart';
-
 class DatabaseService {
   static final DatabaseService _instance = DatabaseService._internal();
   factory DatabaseService() => _instance;
@@ -15,7 +13,6 @@ class DatabaseService {
   static const String readingsBoxName = 'readings';
   static const String billsBoxName = 'bills';
   static const String notificationsBoxName = 'notifications';
-  static const String disputesBoxName = 'disputes';
   static const String settingsBoxName = 'settings';
 
   Future<void> init() async {
@@ -26,14 +23,12 @@ class DatabaseService {
     Hive.registerAdapter(ReadingAdapter());
     Hive.registerAdapter(BillAdapter());
     Hive.registerAdapter(NotificationItemAdapter());
-    Hive.registerAdapter(DisputeAdapter());
 
     // Open Boxes
     await Hive.openBox<Submeter>(submetersBoxName);
     await Hive.openBox<Reading>(readingsBoxName);
     await Hive.openBox<Bill>(billsBoxName);
     await Hive.openBox<NotificationItem>(notificationsBoxName);
-    await Hive.openBox<Dispute>(disputesBoxName);
     await Hive.openBox(settingsBoxName);
   }
 
@@ -42,7 +37,6 @@ class DatabaseService {
   Box<Bill> get billsBox => Hive.box<Bill>(billsBoxName);
   Box<NotificationItem> get notificationsBox =>
       Hive.box<NotificationItem>(notificationsBoxName);
-  Box<Dispute> get disputesBox => Hive.box<Dispute>(disputesBoxName);
   Box get settingsBox => Hive.box(settingsBoxName);
 
   Future<void> clearAllData() async {
@@ -50,7 +44,6 @@ class DatabaseService {
     await readingsBox.clear();
     await billsBox.clear();
     await notificationsBox.clear();
-    await disputesBox.clear();
     await settingsBox.clear();
   }
 
@@ -59,7 +52,6 @@ class DatabaseService {
   List<NotificationItem> getAllNotifications() =>
       notificationsBox.values.toList();
   List<Reading> getAllReadings() => readingsBox.values.toList();
-  List<Dispute> getAllDisputes() => disputesBox.values.toList();
   List<Bill> getAllBills() => billsBox.values.toList();
 
   Future<void> addSubmeter(Submeter submeter) async {
@@ -99,10 +91,6 @@ class DatabaseService {
         await notification.save();
       }
     }
-  }
-
-  Future<void> addDispute(Dispute dispute) async {
-    await disputesBox.put(dispute.id, dispute);
   }
 
   Future<void> addBill(Bill bill) async {
