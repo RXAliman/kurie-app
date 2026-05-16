@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../app/theme/kurie_colors.dart';
-import '../services/auth_service.dart';
+import '../data/services/auth_service.dart';
 
 /// Login screen — two-step: Email entry then Password entry.
 /// Matches Stitch "Login: Email Step" and "Login: Password Step" designs.
@@ -119,55 +119,23 @@ class _LoginScreenState extends State<LoginScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 80),
-          // Logo / Brand
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: KurieColors.primary,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.electric_meter_rounded,
-                  color: Colors.white,
-                  size: 28,
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                'Kurie',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.32,
-                  color: KurieColors.onSurface,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 48),
           // Header
           const Text(
-            'Log in or Sign up',
+            'Log in',
             style: TextStyle(
               fontFamily: 'Inter',
-              fontSize: 24,
-              fontWeight: FontWeight.w600,
-              height: 32 / 24,
+              fontSize: 32,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.64,
               color: KurieColors.onSurface,
             ),
           ),
           const SizedBox(height: 8),
           const Text(
-            'Enter your email to access your meter data.',
+            'Enter your email to log in and access your meter data.',
             style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 16,
-              fontWeight: FontWeight.w400,
-              height: 24 / 16,
               color: KurieColors.onSurfaceVariant,
             ),
           ),
@@ -224,7 +192,11 @@ class _LoginScreenState extends State<LoginScreen> {
             width: double.infinity,
             height: 48,
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      color: KurieColors.secondary,
+                    ),
+                  )
                 : ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       foregroundColor: KurieColors.primary,
@@ -295,7 +267,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Welcome back, ${_emailController.text.trim()}',
+            'Sign-in with ${_emailController.text.trim()}',
             style: const TextStyle(
               fontFamily: 'Inter',
               fontSize: 16,
@@ -334,21 +306,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             onSubmitted: (_) => _onLogin(),
-          ),
-          const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: () {},
-              child: const Text(
-                'Forgot password?',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: KurieColors.primary,
-                ),
-              ),
-            ),
           ),
           const SizedBox(height: 16),
           // Login button

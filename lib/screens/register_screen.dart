@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../app/theme/kurie_colors.dart';
-import '../services/auth_service.dart';
+import '../data/services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -48,9 +48,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Registration failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Registration failed: $e')));
       }
     }
   }
@@ -63,7 +63,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: KurieColors.onSurface),
+          icon: const Icon(
+            Icons.arrow_back_rounded,
+            color: KurieColors.onSurface,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -96,13 +99,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 40),
-                
+
                 // First Name
                 _buildLabel('FIRST NAME'),
                 TextFormField(
                   controller: _firstNameController,
                   decoration: const InputDecoration(hintText: 'John'),
-                  validator: (value) => value == null || value.isEmpty ? 'Please enter your first name' : null,
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Please enter your first name'
+                      : null,
                 ),
                 const SizedBox(height: 24),
 
@@ -111,7 +116,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _lastNameController,
                   decoration: const InputDecoration(hintText: 'Doe'),
-                  validator: (value) => value == null || value.isEmpty ? 'Please enter your last name' : null,
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Please enter your last name'
+                      : null,
                 ),
                 const SizedBox(height: 24),
 
@@ -120,10 +127,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(hintText: 'you@example.com'),
+                  decoration: const InputDecoration(
+                    hintText: 'you@example.com',
+                  ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Please enter your email';
-                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) return 'Please enter a valid email';
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your email';
+                    }
+                    if (!RegExp(
+                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                    ).hasMatch(value)) {
+                      return 'Please enter a valid email';
+                    }
                     return null;
                   },
                 ),
@@ -138,13 +153,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     hintText: '••••••••',
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        _obscurePassword
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
                         color: KurieColors.onSurfaceVariant,
                       ),
-                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
                     ),
                   ),
-                  validator: (value) => value != null && value.length < 6 ? 'Password must be at least 6 characters' : null,
+                  validator: (value) => value != null && value.length < 6
+                      ? 'Password must be at least 6 characters'
+                      : null,
                 ),
                 const SizedBox(height: 40),
 
@@ -157,13 +177,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: KurieColors.primary,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                     child: _isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
                         : const Text(
                             'Sign Up',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                   ),
                 ),

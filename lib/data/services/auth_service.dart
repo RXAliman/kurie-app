@@ -41,7 +41,10 @@ class AuthService {
   }
 
   // Sign in with Email and Password
-  Future<UserCredential?> signInWithEmailAndPassword(String email, String password) async {
+  Future<UserCredential?> signInWithEmailAndPassword(
+    String email,
+    String password,
+  ) async {
     try {
       return await _auth.signInWithEmailAndPassword(
         email: email,
@@ -65,12 +68,12 @@ class AuthService {
         email: email,
         password: password,
       );
-      
+
       if (userCredential.user != null) {
         await userCredential.user!.updateDisplayName('$firstName $lastName');
         await userCredential.user!.reload();
       }
-      
+
       return userCredential;
     } catch (e) {
       debugPrint('Error registering with email/password: $e');
@@ -82,5 +85,18 @@ class AuthService {
   Future<void> signOut() async {
     await _googleSignIn.signOut();
     await _auth.signOut();
+  }
+
+  // Delete Account
+  Future<void> deleteAccount() async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        await user.delete();
+      }
+    } catch (e) {
+      debugPrint('Error deleting account: $e');
+      rethrow;
+    }
   }
 }

@@ -1,6 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kurie/data/repositories/app_repository.dart';
+import 'package:kurie/data/services/auth_service.dart';
 import 'package:provider/provider.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../app/theme/kurie_colors.dart';
 
 /// Settings & Profile screen — matches Stitch "Settings & Profile" design.
@@ -16,6 +19,71 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
   bool _billingAlerts = true;
   bool _readingReminders = true;
   String _selectedTheme = 'Light';
+
+  final User? _user = FirebaseAuth.instance.currentUser;
+  String _appVersion = '0.0.0';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAppVersion();
+  }
+
+  Future<void> _loadAppVersion() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _appVersion = packageInfo.version;
+      });
+    }
+  }
+
+  Future<void> _onSignOut() async {
+    await AuthService().signOut();
+    if (mounted) {
+      Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+    }
+  }
+
+  Future<void> _onDeleteAccount() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Account?'),
+        content: const Text(
+          'This action is permanent and cannot be undone. All your data will be lost.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: KurieColors.error),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await AuthService().deleteAccount();
+        if (mounted) {
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil('/login', (route) => false);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,128 +135,27 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Julian Doe',
-                    style: TextStyle(
+                  Text(
+                    _user?.displayName ?? 'User',
+                    style: const TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
                       color: KurieColors.onSurface,
                     ),
                   ),
-                  const Text(
-                    'j.doe@example.com',
-                    style: TextStyle(
+                  Text(
+                    _user?.email ?? 'No email',
+                    style: const TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 14,
                       color: KurieColors.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: KurieColors.primary,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: const Text(
-                      'ADMIN',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.0,
-                        color: Colors.white,
-                      ),
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 40),
-
-            // Property Details
-            _sectionTitle('PROPERTY ASSOCIATION'),
-            const SizedBox(height: 8),
-            _configGroup(
-              children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.home_work_rounded,
-                      size: 20,
-                      color: KurieColors.primary,
-                    ),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Eastwood Residences',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          Text(
-                            'Current Property',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: KurieColors.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Divider(height: 1),
-                ),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.qr_code_2_rounded,
-                      size: 20,
-                      color: KurieColors.primary,
-                    ),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'KURI-99X',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          Text(
-                            'Invite Code',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: KurieColors.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.copy_rounded, size: 18),
-                      color: KurieColors.primary,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
 
             // Notifications
             _sectionTitle('NOTIFICATIONS'),
@@ -326,7 +293,7 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
                   'Sign Out',
                   Icons.logout_rounded,
                   KurieColors.onSurface,
-                  () {},
+                  _onSignOut,
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 8),
@@ -336,17 +303,17 @@ class _SettingsProfileScreenState extends State<SettingsProfileScreen> {
                   'Delete Account',
                   Icons.delete_forever_rounded,
                   KurieColors.error,
-                  () {},
+                  _onDeleteAccount,
                 ),
               ],
             ),
             const SizedBox(height: 40),
 
             // Version
-            const Center(
+            Center(
               child: Text(
-                'Kurie v4.0.2',
-                style: TextStyle(
+                'Kurie v$_appVersion',
+                style: const TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 12,
                   fontWeight: FontWeight.w500,

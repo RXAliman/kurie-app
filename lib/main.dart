@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kurie/firebase_options.dart';
 import 'package:provider/provider.dart';
@@ -26,13 +27,21 @@ void main() async {
   final repository = AppRepository();
   await repository.init();
 
+  // Check if user is already logged in
+  final currentUser = FirebaseAuth.instance.currentUser;
+  final initialRoute = currentUser != null ? '/home' : '/onboarding';
+
   runApp(
-    ChangeNotifierProvider(create: (_) => repository, child: const KurieApp()),
+    ChangeNotifierProvider(
+      create: (_) => repository,
+      child: KurieApp(initialRoute: initialRoute),
+    ),
   );
 }
 
 class KurieApp extends StatelessWidget {
-  const KurieApp({super.key});
+  final String initialRoute;
+  const KurieApp({super.key, required this.initialRoute});
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +49,7 @@ class KurieApp extends StatelessWidget {
       title: 'Kurie',
       debugShowCheckedModeBanner: false,
       theme: KurieTheme.light,
-      initialRoute: '/onboarding',
+      initialRoute: initialRoute,
       routes: {
         '/onboarding': (context) => const OnboardingScreen(),
         '/login': (context) => const LoginScreen(),
