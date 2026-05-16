@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../app/theme/kurie_colors.dart';
+import '../services/auth_service.dart';
 
 /// Login screen — two-step: Email entry then Password entry.
 /// Matches Stitch "Login: Email Step" and "Login: Password Step" designs.
@@ -30,19 +32,68 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _onLogin() {
+  Future<void> _onLogin() async {
     setState(() => _isLoading = true);
-    // Simulate login delay, then navigate to admin dashboard
-    Future.delayed(const Duration(milliseconds: 800), () {
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    try {
+      final userCredential = await AuthService().signInWithEmailAndPassword(
+        email,
+        password,
+      );
       if (mounted) {
         setState(() => _isLoading = false);
-        Navigator.of(context).pushReplacementNamed('/home');
+        if (userCredential != null) {
+          Navigator.of(context).pushReplacementNamed('/home');
+        }
       }
-    });
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        String message = 'Login failed';
+        if (e.code == 'user-not-found') {
+          message = 'No user found for that email.';
+        } else if (e.code == 'wrong-password') {
+          message = 'Wrong password provided.';
+        } else {
+          message = e.message ?? message;
+        }
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('An error occurred: $e')));
+      }
+    }
   }
 
   void _onBackToEmail() {
     setState(() => _isPasswordStep = false);
+  }
+
+  Future<void> _onGoogleSignIn() async {
+    setState(() => _isLoading = true);
+    final userCredential = await AuthService().signInWithGoogle();
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+      if (userCredential != null) {
+        Navigator.of(context).pushReplacementNamed('/home');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Google sign-in failed or was canceled.'),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -172,28 +223,38 @@ class _LoginScreenState extends State<LoginScreen> {
           SizedBox(
             width: double.infinity,
             height: 48,
-            child: OutlinedButton.icon(
-              onPressed: () {},
-              icon: Image.asset(
-                'lib/app/assets/google-icon.webp',
-                width: 24,
-                height: 24,
-              ),
-              label: const Text('Continue with Google'),
-            ),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: KurieColors.primary,
+                      backgroundColor: Colors.white,
+                      side: const BorderSide(
+                        color: KurieColors.outlineVariant,
+                        width: 1,
+                      ),
+                    ),
+                    onPressed: _onGoogleSignIn,
+                    icon: Image.asset(
+                      'lib/app/assets/google-icon.webp',
+                      width: 24,
+                      height: 24,
+                    ),
+                    label: const Text('Continue with Google'),
+                  ),
           ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: OutlinedButton.icon(
-              onPressed: () {},
-              icon: Image.asset(
-                'lib/app/assets/facebook-icon.webp',
-                width: 24,
-                height: 24,
+          const SizedBox(height: 16),
+          Center(
+            child: TextButton(
+              onPressed: () => Navigator.of(context).pushNamed('/register'),
+              child: const Text(
+                'Don\'t have an account? Tap here.',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w600,
+                  color: KurieColors.primary,
+                ),
               ),
-              label: const Text('Continue with Facebook'),
             ),
           ),
         ],

@@ -18,10 +18,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _OnboardingPage(
       icon: Icons.wifi_off_rounded,
       accentIcon: Icons.cloud_done_outlined,
-      title: 'Offline-First\nTracking',
+      title: 'Offline-first\nTracking',
       subtitle:
-          'Log readings directly in the basement. Data syncs automatically when connection restores.',
-      gradientColors: [Color(0xFF006875), Color(0xFF00A5B8)],
+          'Log readings without an internet connection. Data syncs automatically when connection restores.',
     ),
     _OnboardingPage(
       icon: Icons.receipt_long_rounded,
@@ -29,7 +28,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       title: 'Transparent\nBilling',
       subtitle:
           'See exactly how every peso of your electricity bill is calculated. No hidden fees, ever.',
-      gradientColors: [Color(0xFF006875), Color(0xFF00DAF3)],
     ),
     _OnboardingPage(
       icon: Icons.photo_camera_rounded,
@@ -37,7 +35,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       title: 'Evidence-Based\nTrust',
       subtitle:
           'Photo attachments of actual meter readings build trust between admin and tenants.',
-      gradientColors: [Color(0xFF5F4100), Color(0xFFFFC865)],
     ),
     _OnboardingPage(
       icon: Icons.notifications_active_rounded,
@@ -45,7 +42,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       title: 'Real-time\nAlerts',
       subtitle:
           'Get notified as soon as a bill is finalized. Never miss a billing cycle again.',
-      gradientColors: [Color(0xFF006875), Color(0xFF00E5FF)],
     ),
   ];
 
@@ -73,82 +69,96 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: KurieColors.surface,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Skip button
-            Align(
-              alignment: Alignment.topRight,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 12, right: 20),
-                child: TextButton(
-                  onPressed: _onSkip,
-                  child: Text(
-                    'Skip',
-                    style: TextStyle(
-                      color: KurieColors.onSurfaceVariant,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF00DAF3), Color(0xFF006875)],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Skip button
+              Align(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 12, right: 20),
+                  child: TextButton(
+                    onPressed: _onSkip,
+                    child: Text(
+                      'Skip',
+                      style: TextStyle(
+                        color: KurieColors.surface,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
 
-            // Page content
-            Expanded(
-              child: PageView.builder(
-                controller: _controller,
-                itemCount: _pages.length,
-                onPageChanged: (i) => setState(() => _currentPage = i),
-                itemBuilder: (context, index) {
-                  final page = _pages[index];
-                  return _buildPage(page);
-                },
+              // Page content
+              Expanded(
+                child: PageView.builder(
+                  controller: _controller,
+                  itemCount: _pages.length,
+                  onPageChanged: (i) => setState(() => _currentPage = i),
+                  itemBuilder: (context, index) {
+                    final page = _pages[index];
+                    return _buildPage(page);
+                  },
+                ),
               ),
-            ),
 
-            // Dots
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  _pages.length,
-                  (i) => AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: _currentPage == i ? 24 : 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: _currentPage == i
-                          ? KurieColors.primary
-                          : KurieColors.outlineVariant,
-                      borderRadius: BorderRadius.circular(4),
+              // Dots
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    _pages.length,
+                    (i) => AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      width: _currentPage == i ? 24 : 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: KurieColors.surface,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
 
-            // Continue button
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-              child: SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: _onNext,
-                  child: Text(
-                    _currentPage < _pages.length - 1
-                        ? 'Continue'
-                        : 'Get Started',
+              // Continue button
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: _onNext,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _currentPage < _pages.length - 1
+                          ? KurieColors.surface
+                          : KurieColors.amber,
+                    ),
+                    child: Text(
+                      _currentPage < _pages.length - 1 ? 'Next' : 'Get Started',
+                      style: TextStyle(
+                        color: _currentPage < _pages.length - 1
+                            ? KurieColors.primary
+                            : KurieColors.onSurface,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -164,10 +174,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           Container(
             width: double.infinity,
             height: 280,
-            decoration: BoxDecoration(
-              color: KurieColors.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(16),
-            ),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -177,19 +184,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   height: 160,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: page.gradientColors,
-                    ),
+                    color: KurieColors.surfaceContainerLowest,
                   ),
                 ),
                 // Main icon
-                Icon(
-                  page.icon,
-                  size: 80,
-                  color: Colors.white,
-                ),
+                Icon(page.icon, size: 80, color: KurieColors.primary),
                 // Floating accent icon
                 Positioned(
                   right: 60,
@@ -228,7 +227,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               fontWeight: FontWeight.w700,
               height: 40 / 32,
               letterSpacing: -0.32,
-              color: KurieColors.onSurface,
+              color: KurieColors.surface,
             ),
           ),
           const SizedBox(height: 12),
@@ -241,7 +240,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               fontSize: 16,
               fontWeight: FontWeight.w400,
               height: 24 / 16,
-              color: KurieColors.onSurfaceVariant,
+              color: KurieColors.surface,
             ),
           ),
         ],
@@ -255,13 +254,11 @@ class _OnboardingPage {
   final IconData accentIcon;
   final String title;
   final String subtitle;
-  final List<Color> gradientColors;
 
   const _OnboardingPage({
     required this.icon,
     required this.accentIcon,
     required this.title,
     required this.subtitle,
-    required this.gradientColors,
   });
 }

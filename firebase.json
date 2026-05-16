@@ -1,0 +1,21 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "kurie-app",
+          "appId": "1:993710594827:android:90d00cc9c3cdfc7a31200e",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "kurie-app",
+          "configurations": {
+            "android": "1:993710594827:android:90d00cc9c3cdfc7a31200e"
+          }
+        }
+      }
+    }
+  }
+}

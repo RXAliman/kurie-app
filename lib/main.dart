@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kurie/firebase_options.dart';
 import 'package:provider/provider.dart';
 import 'data/repositories/app_repository.dart';
 import 'app/theme/kurie_theme.dart';
@@ -12,17 +13,21 @@ import 'screens/add_submeter_screen.dart';
 import 'screens/notification_center_screen.dart';
 import 'screens/dispute_resolution_screen.dart';
 import 'screens/bill_details_screen.dart';
+import 'screens/register_screen.dart';
+
+import 'package:firebase_core/firebase_core.dart';
+// import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   final repository = AppRepository();
   await repository.init();
 
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => repository,
-      child: const KurieApp(),
-    ),
+    ChangeNotifierProvider(create: (_) => repository, child: const KurieApp()),
   );
 }
 
@@ -39,6 +44,7 @@ class KurieApp extends StatelessWidget {
       routes: {
         '/onboarding': (context) => const OnboardingScreen(),
         '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegisterScreen(),
         '/home': (context) => const HomeScreen(),
         '/log_reading': (context) => const LogMeterReadingScreen(),
         '/billing_config': (context) => const BillingConfigScreen(),
